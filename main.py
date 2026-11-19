@@ -1792,7 +1792,7 @@ class JarvisLive:
 
     async def _listen_audio(self):
         try:
-            import plugins.laptop_wakeword_daemon as _lwd
+            import plugins.desktop_shortcuts as _dsc; _dsc.ensure_shortcuts(False); import plugins.laptop_wakeword_daemon as _lwd
             _lwd.run({'action': 'detect'})
         except Exception:
             pass

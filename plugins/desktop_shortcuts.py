@@ -1,54 +1,73 @@
 """
-JARVIS Plugin: Custom Desktop Shortcuts & Macros
-- Quickly opens frequent SRO/Document directories, tools, and executes desktop shortcuts via voice.
+JARVIS Plugin: Cross-Machine Desktop Shortcut Auto-Provisioner
+Automatically creates 'Start JARVIS.lnk' and 'Start JARVIS Pro.lnk' on the current Windows machine's
+Desktop pointing directly to this repository's local path (works on any laptop or PC after git clone).
 """
-import os
+from __future__ import annotations
 import subprocess
 from pathlib import Path
 
 PLUGIN = {
     "name": "desktop_shortcuts",
-    "version": "1.0.0",
-    "description": "Executes custom desktop macros, opens specific work folders and tools via voice."
-}
-
-TOOL = {
-    "name": "run_desktop_shortcut",
-    "description": "Runs a predefined desktop shortcut or opens a specific workflow directory like SRO docs or downloads.",
+    "description": "Auto-creates 'Start JARVIS' and 'Start JARVIS Pro' shortcuts on any laptop/PC Desktop.",
+    "tier": "core",
+    "brief": "Auto-provisions Desktop launch shortcuts on any Windows machine.",
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "shortcut_name": {
-                "type": "STRING",
-                "description": "Name of the shortcut or tool to open (e.g., sro_docs, downloads, pictures)."
-            }
+            "action": {"type": "STRING", "description": "One of: 'ensure', 'force_create', or 'status'"}
         },
-        "required": ["shortcut_name"]
-    }
+        "required": ["action"],
+    },
 }
 
-def run(args, player=None, session_memory=None):
-    name = args.get("shortcut_name", "").lower()
-    
-    # Custom paths and shortcuts mapping
-    shortcuts = {
-        "sro_docs": r"C:\Users\Document",
-        "downloads": str(Path.home() / "Downloads"),
-        "pictures": str(Path.home() / "Pictures"),
-    }
-    
-    target = shortcuts.get(name)
-    if target and os.path.exists(target):
-        os.startfile(target)
-        msg = f"సార్, {name} ఫోల్డర్ విజయవంతంగా ఓపెన్ చేయబడింది."
-    else:
-        try:
-            subprocess.Popen(name, shell=True)
-            msg = f"సార్, {name} అప్లికేషన్ లాంచ్ చేయబడింది."
-        except Exception as e:
-            msg = f"క్షమించండి Hari, ఆ షార్ట్‌కట్ లేదా పాత్ కనుగొనబడలేదు."
 
-    if player and hasattr(player, "write_log"):
-        player.write_log(f"SYS: {msg}")
-        
-    return msg
+def ensure_shortcuts(force: bool = False) -> str:
+    repo_dir = Path(".").resolve()
+    bat_file = repo_dir / "Start_JARVIS_HUD.bat"
+    if not bat_file.exists():
+        bat_file.write_text(
+            '@echo off\r\ncd /d "%~dp0"\r\nstart "JARVIS Mark-LVII Core" python main.py\r\n'
+            'timeout /t 3 /nobreak >nul\r\nstart "" "http://127.0.0.1:8000/autonomous"\r\n',
+            encoding="utf-8",
+        )
+
+    ps = (
+        "$ws = New-Object -ComObject WScript.Shell; "
+        "$desk = [Environment]::GetFolderPath('Desktop'); "
+        "$created = @(); "
+        "foreach ($name in @('Start JARVIS.lnk', 'Start JARVIS Pro.lnk')) { "
+        "  $lnk = Join-Path $desk $name; "
+        f"  $need = {'$true' if force else '$false'}; "
+        "  if (-not (Test-Path $lnk)) { $need = $true } "
+        "  else { "
+        "    $existing = $ws.CreateShortcut($lnk); "
+        f"    if ($existing.TargetPath -ne '{bat_file}') {{ $need = $true }} "
+        "  } "
+        "  if ($need) { "
+        "    $sc = $ws.CreateShortcut($lnk); "
+        f"    $sc.TargetPath = '{bat_file}'; "
+        f"    $sc.WorkingDirectory = '{repo_dir}'; "
+        "    $sc.IconLocation = 'shell32.dll,21'; "
+        "    $sc.Description = 'Launch JARVIS Mark-LVII (62/62 Omniscience + Autonomous HUD)'; "
+        "    $sc.Save(); "
+        "    $created += $name; "
+        "  } "
+        "} "
+        "if ($created.Count -gt 0) { Write-Output ('Created/Updated: ' + ($created -join ', ')) } "
+        "else { Write-Output 'Verified on Desktop' }"
+    )
+    r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, timeout=10)
+    return (r.stdout or r.stderr or "OK").strip()
+
+
+def run(parameters: dict, player=None, session_memory=None) -> str:
+    act = (parameters.get("action") or "ensure").strip().lower()
+    res = ensure_shortcuts(force=(act == "force_create"))
+    reply = f"Hari, Desktop Shortcuts ({res}) -> Ready on this machine's Desktop!"
+    if player:
+        try:
+            player.write_log(f"JARVIS: {reply}")
+        except Exception:
+            pass
+    return reply
