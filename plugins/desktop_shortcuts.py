@@ -30,9 +30,7 @@ def ensure_shortcuts(force_log: bool = False) -> str:
         'cd /d "%~dp0"\r\n'
         'echo [JARVIS Cloud Sync] Checking for latest updates from GitHub...\r\n'
         '"C:\\Program Files\\Git\\cmd\\git.exe" pull --rebase --autostash origin main 2>nul\r\n'
-        'start "JARVIS Mark-LVII Core" python main.py\r\n'
-        'timeout /t 3 /nobreak >nul\r\n'
-        'start "" "http://127.0.0.1:8000/mcu"\r\n'
+        'start "JARVIS Mark-LVII" pythonw main.py\r\n'
     )
     bat_path.write_text(bat_content, encoding="utf-8")
 
