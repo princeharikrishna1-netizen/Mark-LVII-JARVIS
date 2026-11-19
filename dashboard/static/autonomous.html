@@ -85,7 +85,7 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <a href="/" style="color:#8ecae6;font-size:0.82rem;text-decoration:none;border:1px solid rgba(255,255,255,0.2);padding:6px 12px;border-radius:8px;">&larr; Remote UI</a>
-      <span class="pill" id="coreBadge">40/40 ENGINES ONLINE</span>
+      <span class="pill" id="coreBadge">44/44 ENGINES ONLINE</span>
     </div>
   </div>
 
@@ -125,7 +125,7 @@
   </div>
 
         <div class="card" style="margin-bottom:16px; border-color: var(--gold);">
-    <div class="section-title">&#9889; One-Tap Workflow Macro Deck &amp; Cron Guard (40/40)</div>
+    <div class="section-title">&#9889; One-Tap Workflow Macro Deck &amp; Cron Guard (44/44)</div>
     <div class="actions">
       <button class="gold" onclick="quickMobile('macro work_desk')">&#128188; Macro: Work Desk</button>
       <button onclick="quickMobile('macro full_audit')">&#128737; Macro: Full Audit</button>
@@ -186,7 +186,7 @@
   </div>
 
   <div class="card" style="margin-bottom:16px;">
-    <div class="section-title">Linked Cognitive &amp; Autonomous Sub-Modules (40/40)</div>
+    <div class="section-title">Linked Cognitive &amp; Autonomous Sub-Modules (44/44)</div>
     <div class="modules-grid" id="modulesGrid"></div>
   </div>
 
@@ -399,11 +399,71 @@ function pulseHoloSpeech(ms = 2500) {
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 10px Consolas, monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(speaking ? 'VOICE SYNTHESIS ACTIVE' : 'MARK-LVII NEURAL CORE 40/40', cx, h - 8);
+    ctx.fillText(speaking ? 'VOICE SYNTHESIS ACTIVE' : 'MARK-LVII NEURAL CORE 44/44', cx, h - 8);
     requestAnimationFrame(draw);
   }
   draw();
 })();
+
+
+// Module 43/44: Spatial Hand-Gesture Webcam Optical-Flow Controller
+let airStream = null, airTimer = null, prevFrame = null, lastGestureAt = 0, gestureSpinBoost = 0;
+async function toggleAirGestures() {
+  const btn = document.getElementById('gestureToggleBtn');
+  const vid = document.getElementById('airGestureVid');
+  if (airStream) {
+    airStream.getTracks().forEach(t => t.stop());
+    airStream = null;
+    clearInterval(airTimer);
+    if (btn) btn.textContent = '\u270B Enable Air-Gestures (Webcam)';
+    return;
+  }
+  try {
+    airStream = await navigator.mediaDevices.getUserMedia({ video: { width: 64, height: 48 }, audio: false });
+    vid.srcObject = airStream;
+    if (btn) btn.textContent = '\uD83D\uDFE2 Air-Gestures LIVE (Wave to Trigger)';
+    const off = document.createElement('canvas');
+    off.width = 64; off.height = 48;
+    const octx = off.getContext('2d', { willReadFrequently: true });
+    airTimer = setInterval(() => {
+      if (!airStream) return;
+      octx.drawImage(vid, 0, 0, 64, 48);
+      const cur = octx.getImageData(0, 0, 64, 48).data;
+      if (prevFrame) {
+        let motionSum = 0, weightedX = 0;
+        for (let i = 0; i < cur.length; i += 4) {
+          const diff = Math.abs(cur[i] - prevFrame[i]) + Math.abs(cur[i+1] - prevFrame[i+1]);
+          if (diff > 55) {
+            const px = (i / 4) % 64;
+            motionSum += diff;
+            weightedX += px * diff;
+          }
+        }
+        if (motionSum > 18000) {
+          gestureSpinBoost = 0.28;
+          const now = Date.now();
+          if (now - lastGestureAt > 5000) {
+            lastGestureAt = now;
+            const centerX = weightedX / motionSum;
+            pulseHoloSpeech(2600);
+            if (motionSum > 65000) {
+              quickMobile('dream cycle');
+            } else if (centerX < 32) {
+              quickMobile('chronos capture');
+            } else {
+              quickMobile('chronos recall');
+            }
+          }
+        } else {
+          gestureSpinBoost *= 0.9;
+        }
+      }
+      prevFrame = new Uint8ClampedArray(cur);
+    }, 180);
+  } catch (e) {
+    alert('Webcam permission needed for Air-Gestures: ' + e.message);
+  }
+}
 
 </script>
     <div class="card" style="margin-bottom:16px; border-color: var(--gold);">

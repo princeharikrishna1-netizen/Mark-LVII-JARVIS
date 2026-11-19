@@ -1144,7 +1144,7 @@ class DashboardServer:
                 "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
                 "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
                 "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm",
-                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git"
+                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution"
             ]
             mod_list = [{"name": m, "online": (pdir / f"{m}.py").exists()} for m in mods]
             runs_f = _P("memory/orchestrator_runs.json")
@@ -1261,6 +1261,18 @@ class DashboardServer:
                 elif "health" in low or "audio guard" in low or "mic check" in low:
                     import plugins.voice_health_guard as _vhg
                     return {"reply": _vhg.run({"action": "check"})}
+                elif "war room" in low or "council" in low:
+                    import plugins.war_room_council as _wrc
+                    topic = low.replace("war room", "").replace("council", "").strip()
+                    return {"reply": _wrc.run({"action": "convene", "topic": topic} if topic else {"action": "status"})}
+                elif "chronos" in low or "recall" in low:
+                    import plugins.chronos_memory as _cm
+                    cact = "capture" if "capture" in low else ("recall" if "recall" in low else "status")
+                    return {"reply": _cm.run({"action": cact})}
+                elif "dream" in low or "evolve" in low:
+                    import plugins.dream_evolution as _de
+                    dact = "run_cycle" if ("cycle" in low or "run" in low) else "briefing"
+                    return {"reply": _de.run({"action": dact})}
                 elif "ghost" in low:
                     import plugins.ghost_recorder as _gr
                     gact = "record_mouse" if "record" in low else ("replay" if "replay" in low else "list")
