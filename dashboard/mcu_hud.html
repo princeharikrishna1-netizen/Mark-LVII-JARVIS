@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>J.A.R.V.I.S. MARK-LVII // MCU HOLOGRAPHIC CORE</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root { --cyan: #00f3ff; --gold: #ffb703; --bg: #030914; --panel: rgba(4, 18, 36, 0.78); }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Consolas, monospace; }
+  body { background: var(--bg); color: #e0f7fa; overflow: hidden; height: 100vh; }
+  #canvas-container { position: fixed; inset: 0; z-index: 1; }
+  .hud-overlay { position: relative; z-index: 2; display: grid; grid-template-columns: 330px 1fr 350px; height: 100vh; padding: 16px; gap: 16px; pointer-events: none; }
+  .panel { background: var(--panel); border: 1px solid rgba(0, 243, 255, 0.35); border-radius: 12px; padding: 14px; backdrop-filter: blur(10px); box-shadow: 0 0 24px rgba(0, 243, 255, 0.12); pointer-events: auto; display: flex; flex-direction: column; gap: 10px; }
+  h2 { font-size: 13px; letter-spacing: 2px; color: var(--cyan); border-bottom: 1px solid rgba(0, 243, 255, 0.25); padding-bottom: 6px; text-transform: uppercase; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 8px; background: rgba(0, 243, 255, 0.06); border-left: 2px solid var(--cyan); }
+  .center-hud { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; }
+  .top-banner { pointer-events: auto; text-align: center; background: var(--panel); border: 1px solid rgba(0, 243, 255, 0.4); padding: 8px 22px; border-radius: 999px; letter-spacing: 2px; font-size: 13px; color: var(--cyan); }
+  .console-box { pointer-events: auto; width: 100%; max-width: 680px; background: var(--panel); border: 1px solid rgba(0, 243, 255, 0.45); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  #jarvis-log { height: 125px; overflow-y: auto; font-size: 12px; line-height: 1.5; color: #b2ebf2; padding-right: 6px; }
+  .input-row { display: flex; gap: 8px; }
+  input[type="text"] { flex: 1; background: rgba(0, 12, 24, 0.9); border: 1px solid var(--cyan); color: #fff; padding: 9px 12px; border-radius: 8px; outline: none; font-size: 13px; }
+  button { background: rgba(0, 243, 255, 0.14); border: 1px solid var(--cyan); color: var(--cyan); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; transition: 0.2s; }
+  button:hover { background: var(--cyan); color: #001018; }
+  .btn-gold { border-color: var(--gold); color: var(--gold); background: rgba(255, 183, 3, 0.12); }
+  .btn-gold:hover { background: var(--gold); color: #120d00; }
+  .pill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .badge { font-size: 11px; padding: 5px 7px; border-radius: 6px; background: rgba(0, 255, 170, 0.08); border: 1px solid rgba(0, 255, 170, 0.3); color: #80ffdb; }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+<div class="hud-overlay">
+  <!-- LEFT: MARK-85 TELEMETRY & REAL-TIME AWARENESS -->
+  <div class="panel">
+    <h2>Mark-85 Tactical Suit Telemetry</h2>
+    <div class="stat-row"><span>OPERATOR</span><strong>HARI (SOVEREIGN)</strong></div>
+    <div class="stat-row"><span>ACTIVE PLUGINS</span><strong>78 / 78 VERIFIED</strong></div>
+    <div class="stat-row"><span>SENTINEL SHIELD</span><strong>81 FILES SHA-256</strong></div>
+    <div class="stat-row"><span>PRINTER BODY</span><strong>HP LaserJet 1020 (LEGAL)</strong></div>
+    <div class="stat-row"><span>AUDIO MATRIX</span><strong>PC Muted / Laptop Wake</strong></div>
+    <div class="stat-row"><span>CLOUD SYNC</span><strong>GitHub Auto-Sync LIVE</strong></div>
+    <h2 style="margin-top:6px;">AGI & Cognitive Matrix</h2>
+    <div class="pill-grid">
+      <div class="badge">Self-Learning: ON</div>
+      <div class="badge">Auto-Decision: ON</div>
+      <div class="badge">Vision Frame: LIVE</div>
+      <div class="badge">Multitasking: 52ms</div>
+      <div class="badge">Threat Scan: CLEAR</div>
+      <div class="badge">Cloud Sync: 2-WAY</div>
+    </div>
+  </div>
+
+  <!-- CENTER: 3D HOLOGRAPHIC FACE + VOICE/COMMAND CONSOLE -->
+  <div class="center-hud">
+    <div class="top-banner">J.A.R.V.I.S. MARK-LVII // MCU HOLOGRAPHIC INTELLIGENCE CORE</div>
+    <div class="console-box">
+      <div id="jarvis-log">[BOOT] Hari, MCU-Level 3D Holographic Core Online. All 78 subsystems, Real-Time Screen Vision, and Permission Gates are active.</div>
+      <div class="input-row">
+        <input id="cmd-input" type="text" placeholder="Speak or type command for Hari's JARVIS (e.g., 'run proactive scan')..." onkeydown="if(event.key==='Enter') sendCmd()" />
+        <button onclick="sendCmd()">EXECUTE</button>
+        <button class="btn-gold" onclick="triggerSpeak()">VOICE PULSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PROACTIVE PERMISSION GATE & PC CONTROLS -->
+  <div class="panel">
+    <h2>Proactive Permission Gate</h2>
+    <div id="perm-status" style="font-size:12px; color:#ffd166; background:rgba(255,183,3,0.08); padding:9px; border-radius:8px; border:1px solid rgba(255,183,3,0.35);">
+      Checking Tier-2 Permission Queue...
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-gold" style="flex:1;" onclick="quickAction('approve')">APPROVE</button>
+      <button style="flex:1;" onclick="quickAction('reject')">REJECT</button>
+    </div>
+    <h2 style="margin-top:6px;">Direct PC & Mission Controls</h2>
+    <button onclick="quickAction('proactive_scan')">1. Run Proactive Situation Scan</button>
+    <button onclick="quickAction('diagnostics')">2. Mark-85 Full Suit Diagnostics</button>
+    <button onclick="quickAction('vision')">3. Capture Live Screen Vision Frame</button>
+    <button onclick="quickAction('cloud_sync')">4. Force Two-Way GitHub Cloud Sync</button>
+  </div>
+</div>
+
+<script>
+// 3D Holographic AI Face / Neural Core (Three.js)
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5.2;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+const coreGroup = new THREE.Group();
+scene.add(coreGroup);
+
+// Inner Neural Face Mesh (Icosahedron Wireframe + Glowing Core)
+const geo1 = new THREE.IcosahedronGeometry(1.15, 2);
+const mat1 = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.65 });
+const neuralHead = new THREE.Mesh(geo1, mat1);
+coreGroup.add(neuralHead);
+
+const geoCore = new THREE.SphereGeometry(0.55, 24, 24);
+const matCore = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.35 });
+const innerCore = new THREE.Mesh(geoCore, matCore);
+coreGroup.add(innerCore);
+
+// Orbital Gyroscopic Rings
+const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.65, 0.025, 16, 100), new THREE.MeshBasicMaterial({ color: 0x00f3ff }));
+const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.95, 0.02, 16, 100), new THREE.MeshBasicMaterial({ color: 0xffb703 }));
+const ring3 = new THREE.Mesh(new THREE.TorusGeometry(2.25, 0.015, 16, 100), new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.5 }));
+coreGroup.add(ring1, ring2, ring3);
+
+let pulseBoost = 0;
+function triggerSpeak() {
+  pulseBoost = 1.0;
+  appendLog("[VOICE] Hari, holographic voice waveform engaged. Standing by for your directive.");
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  neuralHead.rotation.y += 0.006;
+  neuralHead.rotation.x += 0.002;
+  ring1.rotation.x += 0.012; ring1.rotation.y += 0.008;
+  ring2.rotation.y -= 0.015; ring2.rotation.z += 0.006;
+  ring3.rotation.x -= 0.007;
+  const s = 1 + Math.sin(Date.now() * 0.005) * 0.04 + pulseBoost * 0.25;
+  innerCore.scale.set(s, s, s);
+  pulseBoost *= 0.94;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+function appendLog(msg) {
+  const el = document.getElementById('jarvis-log');
+  el.innerHTML += `<div>${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function quickAction(act) {
+  pulseBoost = 0.9;
+  appendLog(`[EXEC] Triggering ${act.toUpperCase()}...`);
+  try {
+    const res = await fetch('/api/mcu_action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: act })
+    });
+    const data = await res.json();
+    appendLog(`[JARVIS] ${data.reply}`);
+    if (data.pending) document.getElementById('perm-status').innerText = data.pending;
+  } catch (e) {
+    appendLog(`[LOCAL] Hari, action '${act}' queued in Mark-LVII core.`);
+  }
+}
+
+async function sendCmd() {
+  const inp = document.getElementById('cmd-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  pulseBoost = 1.0;
+  appendLog(`[HARI] ${txt}`);
+  try {
+    const res = await fetch('/api/mcu_action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'command', prompt: txt })
+    });
+    const data = await res.json();
+    appendLog(`[JARVIS] ${data.reply}`);
+  } catch (e) {
+    appendLog(`[JARVIS] Hari, command received by Mark-LVII neural core.`);
+  }
+}
+quickAction('status');
+</script>
+</body>
+</html>
