@@ -1791,6 +1791,11 @@ class JarvisLive:
             )
 
     async def _listen_audio(self):
+        try:
+            import plugins.laptop_wakeword_daemon as _lwd
+            _lwd.run({'action': 'detect'})
+        except Exception:
+            pass
         print('[JARVIS] Mic disabled (Output-only mode — sending keepalive)')
         _silence = b"\x00" * 320  # 10ms of 16kHz 16-bit mono silence
         while True:
