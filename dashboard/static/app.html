@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS - Mark LXXXV HUD Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0a0d14;
+      --surface: rgba(10, 15, 25, 0.85);
+      --border:  rgba(0, 229, 255, 0.25);
+      --accent:  #00e5ff;
+      --adim:    rgba(0,229,255,0.12);
+      --text:    #e0f7fa;
+      --muted:   #5e6a7e;
+      --green:   #22c55e;
+      --gdim:    rgba(34,197,94,0.14);
+      --hud-gold: #f39c12;
+    }
+    html, body {
+      height: 100%; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Telugu', sans-serif;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      background: rgba(10,13,20,0.95);
+    }
+    .logo { font-size: 15px; font-weight: 700; letter-spacing: 6px; color: var(--hud-gold); }
+    .logo em { color: var(--accent); font-style: normal; text-shadow: 0 0 10px var(--accent); }
+    .pill {
+      display: flex; align-items: center; gap: 6px; padding: 4px 11px;
+      border-radius: 99px; background: var(--surface); border: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); transition: all 0.3s;
+    }
+    .pill.on { background: var(--gdim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
+    .pill.on .dot { background: var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .spacer { flex: 1; }
+    .enc-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 8px;
+      border-radius: 4px; display: none;
+    }
+    .enc-badge.on  { display: block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: var(--green); }
+    .enc-badge.off { display: block; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.2); color: #f87171; }
+    .url { font-size: 10px; font-family: monospace; color: var(--muted); padding: 4px 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+
+    /* ── FEED ── */
+    main { flex: 1; overflow-y: auto; padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    main::-webkit-scrollbar { width: 3px; }
+    main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.75; animation: pop 0.18s ease; }
+    @keyframes pop { from { opacity:0; transform:translateY(4px); } }
+    .msg-j   { align-self:flex-start; background:var(--adim);   border:1px solid rgba(0,229,255,0.25); border-bottom-left-radius:4px; box-shadow: 0 0 10px rgba(0,229,255,0.1); }
+    .msg-u   { align-self:flex-end;   background:var(--surface); border:1px solid var(--border);        border-bottom-right-radius:4px; }
+    .msg-sys { align-self:center; font-size:11px; color:var(--muted); padding:2px 0; background:transparent; border:none; letter-spacing:0.3px; }
+    .lbl { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; opacity:0.6; margin-bottom:4px; }
+    .msg-j .lbl { color:var(--accent); }
+    .msg-u .lbl { color:var(--muted); text-align:right; }
+
+    /* ── CONTROL PANEL & PERSONA SWITCHER ── */
+    .control-panel {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px; border-top: 1px solid var(--border); background: rgba(10,13,20,0.92);
+      gap: 10px; flex-wrap: wrap;
+    }
+    .quick-bar {
+      display: flex; gap: 6px; overflow-x: auto; flex: 1;
+    }
+    .quick-bar::-webkit-scrollbar { display: none; }
+    .q-chip {
+      flex-shrink: 0; padding: 6px 12px; border-radius: 99px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-size: 11px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    }
+    .q-chip:hover { border-color: var(--accent); color: #fff; background: var(--adim); box-shadow: 0 0 10px var(--accent); }
+    
+    .persona-select {
+      background: var(--surface); border: 1px solid var(--border); color: var(--accent);
+      padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; outline: none; cursor: pointer;
+    }
+    .persona-select:hover { border-color: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.2); }
+
+    /* ── FOOTER ── */
+    footer { flex-shrink:0; padding:10px 14px; border-top:1px solid var(--border); background:rgba(10,13,20,0.95); display:flex; gap:8px; align-items:center; }
+    #inp { flex:1; padding:11px 14px; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-size:14px; outline:none; transition:border-color 0.15s; }
+    #inp:focus { border-color: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    #inp::placeholder { color: var(--muted); }
+    .btn { padding:11px 15px; border:none; border-radius:12px; font-size:11px; font-weight:700; letter-spacing:1.5px; cursor:pointer; transition:opacity 0.15s,transform 0.1s; }
+    .btn:active { transform: scale(0.96); }
+    .btn:hover  { opacity: 0.82; }
+    .btn-send { background: var(--accent); color: var(--bg); font-weight: bold; box-shadow: 0 0 10px var(--accent); }
+    .btn-wake { background:var(--surface); border:1px solid var(--border); color:var(--muted); display:none; }
+    .btn-wake.show { display:block; color:var(--green); border-color:rgba(34,197,94,0.35); }
+    .btn-attach, #mic-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      padding: 11px 13px; font-size: 16px; line-height: 1; border-radius: 12px;
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .btn-attach:hover, #mic-btn:hover  { opacity: 0.82; border-color: var(--accent); color: var(--accent); }
+    #mic-btn.recording {
+      background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.45); color: #ef4444;
+      animation: mic-pulse 1s ease-in-out infinite;
+    }
+    @keyframes mic-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.65;transform:scale(0.97)} }
+
+    /* ── TOAST ── */
+    #toast {
+      position:fixed; top:66px; left:50%; transform:translateX(-50%) translateY(-8px);
+      background:rgba(0,229,255,0.16); border:1px solid var(--accent);
+      color:var(--accent); font-size:12px; font-weight:700; letter-spacing:1px;
+      padding:7px 18px; border-radius:99px; opacity:0; transition:opacity 0.22s,transform 0.22s;
+      pointer-events:none; white-space:nowrap; box-shadow: 0 0 12px rgba(0,229,255,0.3);
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div style="background:#041326;border-bottom:1px solid #00f0ff44;padding:6px 14px;text-align:right;"><a href="/autonomous" style="color:#00f0ff;font-family:sans-serif;font-size:12px;font-weight:700;text-decoration:none;">&#9889; OPEN AUTONOMOUS HUD (22/22) &rarr;</a></div>
+  <div id="toast"></div>
+  <header>
+    <div class="logo"><em>J</em>.A.R.V.I.S. (Mark LXXXV)</div>
+    <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
+    <div class="enc-badge" id="enc">AES-GCM</div>
+    <div class="spacer"></div>
+    <button class="q-chip" onclick="restartServer()" style="border-color: #f87171; color: #f87171; padding: 4px 10px; font-size: 10px;">🔄 Restart Server</button>
+    <div class="url">__IP__:__PORT__</div>
+  </header>
+  <main id="feed"></main>
+  
+  <!-- Control Panel with Quick Chips and Persona Switcher -->
+  <div class="control-panel">
+    <div class="quick-bar">
+      <button class="q-chip" onclick="sendQuick('Screen meeda emundo chusi help cheyi')">🖥️ Screen Help</button>
+      <button class="q-chip" onclick="sendQuick('System status mariyu CPU RAM usage check cheyi')">💻 System &amp; Performance</button>
+      <button class="q-chip" onclick="sendQuick('Uploaded files list chupinchu')">📂 Uploaded Files</button>
+      <button class="q-chip" onclick="sendQuick('Last action ni undo cheyi')">↩️ Undo</button>
+    </div>
+    <select id="personaSelector" class="persona-select" onchange="switchPersona(this.value)" title="Switch AI Persona">
+      <option value="rayalaseema">🔥 Rayalaseema Slang</option>
+      <option value="professional">⚡ Professional Mode</option>
+    </select>
+  </div>
+
+  <footer>
+    <input id="inp" placeholder="Send a command to Sudha/JARVIS…" autocomplete="off">
+    <label class="btn-attach" for="file-inp" title="Send file">📎</label>
+    <input type="file" id="file-inp" multiple accept="*/*" style="display:none">
+    <button id="mic-btn" onclick="doMic()" title="Voice command">🎤</button>
+    <button class="btn btn-wake" id="wake" onclick="doWake()">WAKE</button>
+    <button class="btn btn-send" onclick="doSend()">SEND</button>
+  </footer>
+
+  <script>
+    const _authToken  = sessionStorage.getItem('jarvis_token');
+    const _sessionKey = sessionStorage.getItem('jarvis_key');
+    if (!_authToken) { location.replace('/login'); }
+    function _authHeader() { return { 'Authorization': `Bearer ${_authToken}` }; }
+    function _authFetch(url, opts = {}) {
+      opts.headers = Object.assign({}, opts.headers, _authHeader());
+      return fetch(url, opts);
+    }
+
+    const feed  = document.getElementById('feed');
+    const pill  = document.getElementById('pill');
+    const stTxt = document.getElementById('st');
+    const wake  = document.getElementById('wake');
+
+    const _wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${_wsProto}://${location.host}/ws?token=${encodeURIComponent(_authToken)}`);
+
+    ws.onopen    = () => { sys('Iron Man HUD Protocol active, Hari.'); toast('Connected to Sudha'); };
+    ws.onclose   = () => sys('Connection lost — refresh to reconnect.');
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data);
+      if (m.type === 'log')    append(m.speaker, m.text);
+      if (m.type === 'status') setStatus(m.state);
+      if (m.type === 'sys')    sys(m.text);
+    };
+
+    function setStatus(s) {
+      if (s === 'active') {
+        pill.className = 'pill on'; stTxt.textContent = 'Active'; wake.classList.remove('show');
+      } else {
+        pill.className = 'pill'; stTxt.textContent = 'Sleeping'; wake.classList.add('show');
+      }
+    }
+
+    async function restartServer() {
+      if (confirm("Are you sure you want to restart the JARVIS server?")) {
+        toast("Restarting JARVIS server...");
+        try {
+          await _authFetch('/api/restart', { method: 'POST' });
+        } catch (err) {
+          setTimeout(() => { location.reload(); }, 3000);
+        }
+      }
+    }
+
+    function append(speaker, text) {
+      const d = document.createElement('div');
+      d.className = speaker === 'jarvis' ? 'msg msg-j' : 'msg msg-u';
+      d.innerHTML = `<div class="lbl">${speaker === 'jarvis' ? 'Sudha' : 'You'}</div>${esc(text)}`;
+      feed.appendChild(d);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function sys(text) {
+      const d = document.createElement('div');
+      d.className = 'msg msg-sys'; d.textContent = text;
+      feed.appendChild(d); feed.scrollTop = feed.scrollHeight;
+    }
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function sendQuick(cmdText) {
+      append('user', cmdText);
+      _authFetch('/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cmdText })
+      });
+    }
+
+    async function switchPersona(mode) {
+      toast(`Switching persona to ${mode}...`);
+      try {
+        const res = await _authFetch('/api/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'switch_assistant_voice', parameters: { persona: mode } })
+        });
+        if (res.ok) {
+          toast(`Persona updated to ${mode}`);
+        } else {
+          toast('Failed to update persona');
+        }
+      } catch (err) {
+        console.error("Error switching persona:", err);
+        toast('Error triggering persona switch');
+      }
+    }
+
+    async function doSend() {
+      const inp = document.getElementById('inp');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      append('user', txt);
+      _authFetch('/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: txt })
+      });
+    }
+
+    document.getElementById('inp').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+    });
+
+    // ── Voice Commands for GUI Control Integration ───────────────────────────
+    function handleVoiceCommand(transcript) {
+      const cmd = transcript.toLowerCase();
+      console.log("[Voice Command Detected]:", cmd);
+
+      if (cmd.includes('screen help') || cmd.includes('డ్యూటీ')) {
+        sendQuick('Screen meeda emundo chusi help cheyi');
+      } else if (cmd.includes('system status') || cmd.includes('system')) {
+        sendQuick('System status mariyu CPU RAM usage check cheyi');
+      } else if (cmd.includes('files') || cmd.includes('ఫైల్స్')) {
+        sendQuick('Uploaded files list chupinchu');
+      } else if (cmd.includes('undo')) {
+        sendQuick('Last action ni undo cheyi');
+      } else {
+        sendQuick(transcript);
+      }
+    }
+
+    let _voiceActive = false;
+    function doMic() {
+      const micBtn = document.getElementById('mic-btn');
+      _voiceActive = !_voiceActive;
+      if (_voiceActive) {
+        micBtn.classList.add('recording');
+        toast('🎤 Voice Command Listening Active');
+        sys('Voice command mode active — speak now.');
+      } else {
+        micBtn.classList.remove('recording');
+        toast('🎤 Voice Command Stopped');
+        sys('Voice command mode stopped.');
+      }
+    }
+
+    let _toastTimer;
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>
+```[cite: 3, 4]
+
+ఈ కోడ్‌ని నీ ప్రాజెక్ట్ ఫోల్డర్‌లోని `app.html` లో సేవ్ చేసి చెక్ చేయి Hari, ఇప్పుడు డ్యాష్‌బోర్డ్ హెడర్‌లోనే **Restart Server** బటన్ కూడా పర్‌ఫెక్ట్‌గా వచ్చేస్తుంది[cite: 3]!

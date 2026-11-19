@@ -1,0 +1,10 @@
+# JARVIS Mark-LVII Security & Runtime Exclusions
+config/api_keys.json
+*.env
+.env
+memory/
+__pycache__/
+*.pyc
+*.zip
+.venv/
+venv/

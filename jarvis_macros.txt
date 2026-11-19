@@ -1,0 +1,31 @@
+; ==========================================
+; JARVIS Advanced Desktop Automation (AHK)
+; ==========================================
+#NoEnv  
+SendMode Input  
+SetWorkingDir %A_ScriptDir%  
+
+; 1. Ctrl + Alt + J -> Open JARVIS Dashboard in Browser
+^!j::
+    Run, http://10.90.58.117:8000
+    Return
+
+; 2. Ctrl + Alt + P -> Open Project Root Folder (Mark-LVII-main)
+^!p::
+    Run, C:\Users\IGRS\Pictures\Mark-LVII-main
+    Return
+
+; 3. Ctrl + Alt + T -> Open PowerShell directly in Project Folder
+^!t::
+    Run, powershell.exe -NoExit -Command "cd C:\Users\IGRS\Pictures\Mark-LVII-main"
+    Return
+
+; 4. Ctrl + Alt + M -> Minimize/Restore Active Window instantly
+^!m::
+    WinMinimize, A
+    Return
+
+; 5. Win + J -> Quick HUD Trigger Notification
+#j::
+    MsgBox, 64, JARVIS HUD, Iron Man Mark LXXXV Protocol Active, Hari!
+    Return

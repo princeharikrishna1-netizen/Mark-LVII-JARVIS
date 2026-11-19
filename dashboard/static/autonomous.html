@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S. MARK-LVII // AUTONOMOUS HUD</title>
+<style>
+  :root {
+    --cyan: #00f0ff;
+    --blue: #0077ff;
+    --gold: #ffae00;
+    --red: #ff3b3b;
+    --bg: #030811;
+    --panel: rgba(6, 20, 40, 0.78);
+    --border: rgba(0, 240, 255, 0.28);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body {
+    background: radial-gradient(circle at 50% 15%, #091d38 0%, var(--bg) 70%);
+    color: #e6f7ff;
+    min-height: 100vh;
+    padding: 18px;
+  }
+  .header {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border); background: var(--panel);
+    padding: 14px 20px; border-radius: 12px; margin-bottom: 16px;
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.12);
+  }
+  .title { font-size: 1.25rem; font-weight: 700; letter-spacing: 2px; color: var(--cyan); }
+  .sub { font-size: 0.8rem; color: #8ecae6; margin-top: 2px; }
+  .pill {
+    padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+    background: rgba(0, 240, 255, 0.14); border: 1px solid var(--cyan); color: var(--cyan);
+  }
+  .grid-top {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px; margin-bottom: 16px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; backdrop-filter: blur(8px);
+  }
+  .metric-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; color: #7fb3d5; }
+  .metric-val { font-size: 1.9rem; font-weight: 700; color: var(--cyan); margin: 6px 0; }
+  .bar-bg { height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); width: 0%; transition: width 0.4s; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  button {
+    background: linear-gradient(135deg, rgba(0,119,255,0.35), rgba(0,240,255,0.22));
+    border: 1px solid var(--cyan); color: #fff; padding: 10px 16px;
+    border-radius: 8px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px;
+  }
+  button:hover { background: rgba(0,240,255,0.32); }
+  button.gold { border-color: var(--gold); color: #ffe5a3; }
+  .section-title {
+    font-size: 0.9rem; letter-spacing: 1.5px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 10px; font-weight: 700;
+  }
+  .modules-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 8px; margin-bottom: 16px;
+  }
+  .mod-chip {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;
+    background: rgba(0, 240, 255, 0.06); border: 1px solid rgba(0, 240, 255, 0.18);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+  .dot.off { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+  .log-item {
+    padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.04);
+    border-left: 3px solid var(--cyan); margin-bottom: 8px; font-size: 0.82rem; line-height: 1.4;
+  }
+  .log-item.alert { border-left-color: var(--gold); }
+  .toast { font-size: 0.82rem; color: #00ff88; margin-left: auto; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">J.A.R.V.I.S. MARK-LVII // AUTONOMOUS CORE</div>
+      <div class="sub">OPERATOR: HARI &bull; LEVEL 4 UNIFIED ORCHESTRATION HUD</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <a href="/" style="color:#8ecae6;font-size:0.82rem;text-decoration:none;border:1px solid rgba(255,255,255,0.2);padding:6px 12px;border-radius:8px;">&larr; Remote UI</a>
+      <span class="pill" id="coreBadge">40/40 ENGINES ONLINE</span>
+    </div>
+  </div>
+
+  <div class="card" id="briefingBanner" style="margin-bottom:14px; border-left:4px solid var(--cyan); font-size:0.86rem; color:#d8f8ff;">Loading Executive Briefing...</div>
+
+  <div class="grid-top">
+    <div class="card">
+      <div class="metric-label">CPU Telemetry</div>
+      <div class="metric-val" id="cpuVal">--%</div>
+      <div class="bar-bg"><div class="bar-fill" id="cpuBar"></div></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Memory Load</div>
+      <div class="metric-val" id="ramVal">--%</div>
+      <div class="bar-bg"><div class="bar-fill" id="ramBar"></div></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Orchestrated Runs</div>
+      <div class="metric-val" id="runsVal">0</div>
+      <div class="sub" id="lastRunStatus">Standby</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Proactive Watcher</div>
+      <div class="metric-val" id="watcherVal" style="font-size:1.35rem;">MONITORING</div>
+      <div class="sub" id="lanVal">Tracked LAN IPs: --</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button onclick="triggerAction('orchestrate')">&#9889; Orchestrate Full Audit</button>
+    <button onclick="triggerAction('scan_now')">&#128737; Proactive LAN &amp; CPU Scan</button>
+    <button class="gold" onclick="triggerAction('rotate_logs')">&#128190; Rotate &amp; Archive Logs</button>
+    <button onclick="triggerAction('promote_scripts')">&#129516; Auto-Promote Scripts</button>
+    <button class="gold" onclick="triggerAction('self_heal')">&#129657; Self-Heal Watchdog</button>
+    <button onclick="quickMobile('create backup snapshot')">&#128230; Create Clean Backup</button>
+    <span class="toast" id="actionToast"></span>
+  </div>
+
+        <div class="card" style="margin-bottom:16px; border-color: var(--gold);">
+    <div class="section-title">&#9889; One-Tap Workflow Macro Deck &amp; Cron Guard (40/40)</div>
+    <div class="actions">
+      <button class="gold" onclick="quickMobile('macro work_desk')">&#128188; Macro: Work Desk</button>
+      <button onclick="quickMobile('macro full_audit')">&#128737; Macro: Full Audit</button>
+      <button onclick="quickMobile('macro vision_check')">&#129504; Macro: AI Vision</button>
+      <button onclick="quickMobile('macro clean_boost')">&#128640; Macro: Clean &amp; Backup</button>
+      <button onclick="quickMobile('cron list')">&#9200; View Cron Schedules</button>
+      <button onclick="quickMobile('health guard')">&#127911; Audio &amp; Net Guard</button>
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:16px; border-color: var(--cyan);">
+    <div class="section-title">&#128203; Cross-Device Clipboard Sync (PC &harr; iPad &harr; Android)</div>
+    <div class="cmd-bar" style="margin-bottom:8px;">
+      <input id="clipInput" type="text" placeholder="Paste text/link on iPad/Mobile to send directly to PC Ctrl+V clipboard..." />
+      <button onclick="sendToPcClip()">Send to PC Clipboard</button>
+    </div>
+    <div class="actions">
+      <button class="gold" onclick="pullFromPcClip()">&#128229; Sync PC Clipboard Here</button>
+      <button onclick="fetchSharedClip()">&#128260; Read Latest Shared Clip</button>
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:16px; border-color: var(--gold);">
+    <div class="section-title">&#9000; Live Autonomous Command Console (PC &amp; iPad)</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <input id="cmdInput" type="text" placeholder="Type command for JARVIS (e.g., Orchestrate security &amp; RAM check, Watcher alerts, Evolution audit)..."
+        onkeydown="if(event.key==='Enter') sendHudCommand()"
+        style="flex:1; min-width:240px; padding:10px 14px; border-radius:8px; border:1px solid var(--cyan); background:rgba(2,10,24,0.9); color:#fff; font-size:0.9rem;">
+      <button onclick="sendHudCommand()">&#128640; Execute</button>
+    </div>
+    <div id="cmdOutput" style="margin-top:10px; padding:10px 12px; border-radius:8px; background:rgba(0,240,255,0.06); font-size:0.85rem; color:#bfefff; min-height:38px;">
+      Ready for direct command dispatch, Hari.
+    </div>
+  </div>
+
+      <div class="card" style="margin-bottom:16px; border-color: var(--green);">
+    <div class="section-title">&#9889; Multi-Device Smart Routines (PC + Android)</div>
+    <div class="actions">
+      <button onclick="quickMobile('run work mode routine')">&#128187; Work Mode</button>
+      <button class="gold" onclick="quickMobile('run night guard routine')">&#128737; Night Guard</button>
+      <button onclick="quickMobile('run morning briefing routine')">&#9728; Morning Briefing</button>
+      <button onclick="quickMobile('run gaming mode routine')">&#127918; Gaming Mode</button>
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:16px; border-color: var(--cyan);">
+    <div class="section-title">&#128241; Android Mobile Bridge Quick-Control (Wireless ADB)</div>
+    <div class="actions">
+      <button onclick="quickMobile('mobile status')">&#128267; Phone &amp; Battery Status</button>
+      <button onclick="quickMobile('open whatsapp on mobile')">&#128172; Open WhatsApp</button>
+      <button onclick="quickMobile('open youtube on mobile')">&#9654; Open YouTube</button>
+      <button class="gold" onclick="quickMobile('capture mobile screenshot')">&#128248; Capture Phone Screen</button>
+      <button onclick="quickMobile('capture pc screen')">&#128421; Capture PC Screen</button>
+      <button onclick="quickMobile('inspect ui mobile')">&#128065; Read Mobile UI</button>
+      <button class="gold" onclick="quickMobile('analyze pc screen vision')">&#129504; AI Analyze PC Screen</button>
+      <button onclick="quickMobile('analyze phone screen vision')">&#129504; AI Analyze Phone Screen</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title">Linked Cognitive &amp; Autonomous Sub-Modules (40/40)</div>
+    <div class="modules-grid" id="modulesGrid"></div>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="section-title">Recent Master Orchestrator Runs</div>
+      <div id="runsList">Loading runs...</div>
+    </div>
+    <div class="card">
+      <div class="section-title">Proactive Watcher Alerts</div>
+      <div id="alertsList">Loading alerts...</div>
+    </div>
+  </div>
+
+<script>
+async function refreshHUD() {
+  try {
+    const res = await fetch('/api/autonomous_status');
+    const data = await res.json();
+    document.getElementById('cpuVal').textContent = data.cpu + '%';
+    document.getElementById('cpuBar').style.width = Math.min(100, data.cpu) + '%';
+    document.getElementById('ramVal').textContent = data.ram + '%';
+    document.getElementById('ramBar').style.width = Math.min(100, data.ram) + '%';
+    document.getElementById('coreBadge').textContent = `${data.active_count}/${data.total_count} ENGINES ONLINE`;
+    document.getElementById('runsVal').textContent = data.total_runs;
+    document.getElementById('lanVal').textContent = `Tracked LAN IPs: ${data.tracked_ips}`;
+    document.getElementById('watcherVal').textContent = data.watcher_status;
+    if (data.briefing) document.getElementById('briefingBanner').textContent = data.briefing;
+
+    const grid = document.getElementById('modulesGrid');
+    grid.innerHTML = data.modules.map(m => `
+      <div class="mod-chip">
+        <span>${m.name}</span>
+        <span class="dot ${m.online ? '' : 'off'}"></span>
+      </div>
+    `).join('');
+
+    const runsList = document.getElementById('runsList');
+    if (data.recent_runs.length === 0) {
+      runsList.innerHTML = '<div class="sub">No orchestrated runs yet.</div>';
+    } else {
+      document.getElementById('lastRunStatus').textContent = `Latest: #${data.recent_runs[0].id} (${data.recent_runs[0].status || 'DONE'})`;
+      runsList.innerHTML = data.recent_runs.map(r => `
+        <div class="log-item">
+          <strong>Run #${r.id} [${r.status || 'COMPLETED'}]</strong> &bull; ${r.timestamp}<br>
+          <span style="color:#8ecae6;">Goal:</span> ${r.goal}
+        </div>
+      `).join('');
+    }
+
+    const alertsList = document.getElementById('alertsList');
+    if (data.recent_alerts.length === 0) {
+      alertsList.innerHTML = '<div class="sub">All baselines nominal ? 0 proactive alerts.</div>';
+    } else {
+      alertsList.innerHTML = data.recent_alerts.map(a => `
+        <div class="log-item alert">
+          <strong>[${a.type}]</strong> ${a.timestamp}<br>${a.detail}
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function triggerAction(cmd) {
+  const toast = document.getElementById('actionToast');
+  toast.textContent = 'Executing ' + cmd + '...';
+  try {
+    const res = await fetch('/api/autonomous_action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: cmd })
+    });
+    const data = await res.json();
+    toast.textContent = data.result || 'Done!';
+    async function sendHudCommand() {
+  const inp = document.getElementById('cmdInput');
+  const out = document.getElementById('cmdOutput');
+  const prompt = inp.value.trim();
+  if (!prompt) return;
+  out.textContent = 'Dispatching to Master Orchestrator...';
+  inp.value = '';
+  try {
+    const res = await fetch('/api/autonomous_command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    out.textContent = data.reply || 'Executed.';
+    async function sendToPcClip() {
+  const inp = document.getElementById('clipInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const r = await fetch('/api/clipboard_sync', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({mode: 'write_pc', text: txt})
+  });
+  const d = await r.json();
+  document.getElementById('cmdReply').textContent = d.reply || 'Synced to PC!';
+  inp.value = '';
+}
+async function pullFromPcClip() {
+  const r = await fetch('/api/clipboard_sync', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({mode: 'push_from_pc'})
+  });
+  const d = await r.json();
+  document.getElementById('cmdReply').textContent = d.reply || 'Pulled!';
+  if (d.drop && d.drop.text) document.getElementById('clipInput').value = d.drop.text;
+}
+async function fetchSharedClip() {
+  const r = await fetch('/api/clipboard_sync', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({mode: 'get_drop'})
+  });
+  const d = await r.json();
+  document.getElementById('cmdReply').textContent = d.reply || 'No shared clip';
+  if (d.drop && d.drop.text) document.getElementById('clipInput').value = d.drop.text;
+}
+
+function quickMobile(cmd) {
+  document.getElementById('cmdInput').value = cmd;
+  sendHudCommand();
+}
+
+const t=Date.now(); const p=document.getElementById('pcScreenImg'); const m=document.getElementById('mobScreenImg'); if(p) p.src='/static/pc_screen.png?t='+t; if(m) m.src='/static/mobile_screen.png?t='+t; refreshHUD();
+  } catch (e) {
+    out.textContent = 'Command error: ' + e;
+  }
+}
+
+refreshHUD();
+  } catch (e) {
+    toast.textContent = 'Error: ' + e;
+  }
+}
+
+refreshHUD();
+setInterval(refreshHUD, 3000);
+
+// 3D Holographic Wireframe Face & Lip-Sync Neural Core Renderer
+let holoSpeakingUntil = 0;
+function pulseHoloSpeech(ms = 2500) {
+  holoSpeakingUntil = Date.now() + ms;
+}
+(function initHoloFace() {
+  const c = document.getElementById('holoFaceCanvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  let t = 0;
+  function draw() {
+    t += 0.045;
+    const w = c.width, h = c.height, cx = w / 2, cy = h / 2 - 4;
+    const speaking = Date.now() < holoSpeakingUntil;
+    ctx.clearRect(0, 0, w, h);
+
+    // Outer rotating Arc-Reactor rings
+    for (let r = 0; r < 3; r++) {
+      ctx.beginPath();
+      ctx.strokeStyle = r === 1 ? 'rgba(245,158,11,0.55)' : 'rgba(0,242,254,0.45)';
+      ctx.lineWidth = r === 0 ? 2 : 1.2;
+      const rad = 74 + r * 10;
+      const start = t * (r % 2 === 0 ? 1 : -1.3) + r;
+      ctx.arc(cx, cy, rad, start, start + Math.PI * 1.35);
+      ctx.stroke();
+    }
+
+    // 3D Projected Holographic Face Contour & Neural Lattice
+    const yaw = Math.sin(t * 0.6) * 0.22;
+    const pts = [];
+    for (let lat = -1.1; lat <= 1.15; lat += 0.32) {
+      for (let lon = -1.1; lon <= 1.15; lon += 0.36) {
+        const rx = Math.sin(lon + yaw) * Math.cos(lat) * 46;
+        const ry = Math.sin(lat) * 60;
+        const rz = Math.cos(lon + yaw) * Math.cos(lat);
+        if (rz > -0.1) pts.push({ x: cx + rx, y: cy + ry, z: rz });
+      }
+    }
+    ctx.fillStyle = 'rgba(0,242,254,0.75)';
+    for (const p of pts) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.3 + p.z * 1.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Glowing Iron-Man HUD Eyes
+    const eyeShift = Math.sin(yaw) * 14;
+    ctx.fillStyle = speaking ? '#fbbf24' : '#00f2fe';
+    ctx.shadowColor = speaking ? '#fbbf24' : '#00f2fe';
+    ctx.shadowBlur = 10;
+    ctx.fillRect(cx - 22 + eyeShift, cy - 14, 14, 4);
+    ctx.fillRect(cx + 8 + eyeShift, cy - 14, 14, 4);
+
+    // Real-Time Lip-Sync Audio Equalizer Mouth
+    const amp = speaking ? (6 + Math.abs(Math.sin(t * 9)) * 12) : (1.5 + Math.abs(Math.sin(t * 2)) * 1.5);
+    ctx.strokeStyle = speaking ? '#fbbf24' : '#00f2fe';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = -22; x <= 22; x += 4) {
+      const env = Math.cos((x / 22) * (Math.PI / 2));
+      const yOff = Math.sin(x * 0.5 + t * 12) * amp * env;
+      if (x === -22) ctx.moveTo(cx + x + eyeShift, cy + 24 + yOff);
+      else ctx.lineTo(cx + x + eyeShift, cy + 24 + yOff);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 10px Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(speaking ? 'VOICE SYNTHESIS ACTIVE' : 'MARK-LVII NEURAL CORE 40/40', cx, h - 8);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+</script>
+    <div class="card" style="margin-bottom:16px; border-color: var(--gold);">
+    <div class="section-title">&#128424; HP LaserJet 1020 Plus ? Legal-Size Print Desk</div>
+    <div class="actions">
+      <button onclick="quickMobile('printer status')">&#128424; Check Printer &amp; Queue</button>
+      <button class="gold" onclick="quickMobile('clear print queue')">&#129529; Clear Stuck Print Queue</button>
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:16px;">
+    <div class="section-title">&#128065; Live Cross-Device Visual Monitor (PC &amp; Android)</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
+      <div>
+        <div style="font-size:0.75rem; color:#88c8ff; margin-bottom:6px;">PC Desktop Feed</div>
+        <img id="pcScreenImg" src="/static/pc_screen.png" alt="Capture PC Screen to preview" style="width:100%; border-radius:8px; border:1px solid rgba(0,240,255,0.3); max-height:190px; object-fit:cover;">
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:#88c8ff; margin-bottom:6px;">Android Mobile Feed</div>
+        <img id="mobScreenImg" src="/static/mobile_screen.png" alt="Capture Phone Screen to preview" style="width:100%; border-radius:8px; border:1px solid rgba(0,240,255,0.3); max-height:190px; object-fit:cover;">
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
