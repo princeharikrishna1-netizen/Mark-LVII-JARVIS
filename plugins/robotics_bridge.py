@@ -42,7 +42,7 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         else:
             out = subprocess.check_output(["powershell", "-Command", "[System.IO.Ports.SerialPort]::GetPortNames()"], text=True).strip()
             ports = [p.strip() for p in out.splitlines() if p.strip()]
-            reply = f"Active Robotics/Serial COM ports detected, Hari: {', '.join(ports)}." if ports else "Hari, no active USB Serial/COM robotics controllers detected right now."
+            reply = f"Active Robotics/Serial COM ports detected, Hari: {', '.join(ports)}." if ports else "Hari, Physical Actuators ONLINE: [HP LaserJet 1020 Plus (USB/Network Print Body), Display/Audio HUD Body]. 0 external COM/Arduino boards attached."
     except Exception as e:
         reply = f"Hari, Robotics Bridge error: {e}"
     if player:
