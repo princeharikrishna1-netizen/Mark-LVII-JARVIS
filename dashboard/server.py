@@ -1144,7 +1144,7 @@ class DashboardServer:
                 "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
                 "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
                 "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm",
-                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution"
+                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox"
             ]
             mod_list = [{"name": m, "online": (pdir / f"{m}.py").exists()} for m in mods]
             runs_f = _P("memory/orchestrator_runs.json")
@@ -1261,6 +1261,19 @@ class DashboardServer:
                 elif "health" in low or "audio guard" in low or "mic check" in low:
                     import plugins.voice_health_guard as _vhg
                     return {"reply": _vhg.run({"action": "check"})}
+                elif "precog" in low or "predict" in low:
+                    import plugins.precog_engine as _pe
+                    return {"reply": _pe.run({"action": "predict"})}
+                elif "sonar" in low or "presence" in low:
+                    import plugins.sonar_presence as _sp
+                    return {"reply": _sp.run({"action": "scan"})}
+                elif "neural mesh" in low or "mesh" in low:
+                    import plugins.neural_mesh_sync as _nm
+                    mact = "broadcast" if "broadcast" in low else "status"
+                    return {"reply": _nm.run({"action": mact})}
+                elif "sandbox" in low:
+                    import plugins.shadow_sandbox as _ss
+                    return {"reply": _ss.run({"action": "verify_all"})}
                 elif "war room" in low or "council" in low:
                     import plugins.war_room_council as _wrc
                     topic = low.replace("war room", "").replace("council", "").strip()
