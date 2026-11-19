@@ -1144,7 +1144,7 @@ class DashboardServer:
                 "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
                 "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
                 "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm",
-                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield", "legal_diff_auditor", "thermal_guardian", "mission_commander", "sovereign_voice_synth"
+                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield", "legal_diff_auditor", "thermal_guardian", "mission_commander", "sovereign_voice_synth", "live_screen_mentor", "screen_data_harvester", "autonomous_data_typer", "copilot_daemon"
             ]
             mod_list = [{"name": m, "online": (pdir / f"{m}.py").exists()} for m in mods]
             runs_f = _P("memory/orchestrator_runs.json")
@@ -1261,6 +1261,20 @@ class DashboardServer:
                 elif "health" in low or "audio guard" in low or "mic check" in low:
                     import plugins.voice_health_guard as _vhg
                     return {"reply": _vhg.run({"action": "check"})}
+                elif "observe" in low or "mentor" in low or "mistake" in low:
+                    import plugins.live_screen_mentor as _lsm
+                    return {"reply": _lsm.run({"action": "observe", "speak_alert": True})}
+                elif "harvest" in low or "grab" in low:
+                    import plugins.screen_data_harvester as _sdh
+                    return {"reply": _sdh.run({"action": "harvest"})}
+                elif "auto type" in low or "enter data" in low or "type:" in low:
+                    import plugins.autonomous_data_typer as _adt
+                    payload = raw.split(":", 1)[1].strip() if ":" in raw else ""
+                    return {"reply": _adt.run({"action": "type_custom", "data": payload} if payload else {"action": "type_harvested"})}
+                elif "copilot" in low:
+                    import plugins.copilot_daemon as _cpd
+                    cact = "start" if "start" in low else ("stop" if "stop" in low else "feed")
+                    return {"reply": _cpd.run({"action": cact})}
                 elif "legal audit" in low or "ec audit" in low or "diff" in low:
                     import plugins.legal_diff_auditor as _lda
                     return {"reply": _lda.run({"action": "audit"})}
