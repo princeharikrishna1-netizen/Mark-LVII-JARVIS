@@ -43,7 +43,7 @@ def has_microphone() -> tuple[bool, str]:
 
 
 def run(parameters: dict, player=None, session_memory=None) -> str:
-    act = (parameters.get("action") or "detect").strip().lower()
+    act = (parameters.get("action") or "mute_pc").strip().lower()
     CFG_FILE.parent.mkdir(parents=True, exist_ok=True)
     mic_ok, dev_name = has_microphone()
 
