@@ -26,7 +26,14 @@
   .wave { height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px; }
   .bar { width: 4px; height: 6px; background: #00f7ff; border-radius: 2px; transition: height 0.08s; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+function missMinutesMode() {
+  brainMat.color.setHex(0xff9900);
+  faceMat.color.setHex(0xffaa00);
+  mouthMat.color.setHex(0xffcc33);
+  speakJarvis('Hey there, Hari! Miss Minutes here! All 71 JARVIS plugins, Tri-Core intelligence, and your Legal-size printer pipeline are ready to roll!');
+}
+</script>
 </head>
 <body>
 <div id="canvas-wrap"></div>
@@ -57,6 +64,7 @@
       </select>
       <button id="mic-btn" onclick="toggleVoice()">??? VOICE COMMAND</button>
       <button onclick="speakJarvis('All systems, 3D Neural Brain, and Tri-Core intelligence are online and ready, Hari.')">?? TEST AI FACE</button>
+      <button onclick="missMinutesMode()">??? MISS MINUTES</button>
     </div>
   </div>
 
@@ -182,6 +190,13 @@ function toggleVoice() {
   };
   rec.onend = () => btn.classList.remove('active');
   rec.start();
+}
+
+function missMinutesMode() {
+  brainMat.color.setHex(0xff9900);
+  faceMat.color.setHex(0xffaa00);
+  mouthMat.color.setHex(0xffcc33);
+  speakJarvis('Hey there, Hari! Miss Minutes here! All 71 JARVIS plugins, Tri-Core intelligence, and your Legal-size printer pipeline are ready to roll!');
 }
 </script>
 </body>
