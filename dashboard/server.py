@@ -1144,7 +1144,7 @@ class DashboardServer:
                 "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
                 "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
                 "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm",
-                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield"
+                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield", "legal_diff_auditor", "thermal_guardian", "mission_commander", "sovereign_voice_synth"
             ]
             mod_list = [{"name": m, "online": (pdir / f"{m}.py").exists()} for m in mods]
             runs_f = _P("memory/orchestrator_runs.json")
@@ -1261,6 +1261,19 @@ class DashboardServer:
                 elif "health" in low or "audio guard" in low or "mic check" in low:
                     import plugins.voice_health_guard as _vhg
                     return {"reply": _vhg.run({"action": "check"})}
+                elif "legal audit" in low or "ec audit" in low or "diff" in low:
+                    import plugins.legal_diff_auditor as _lda
+                    return {"reply": _lda.run({"action": "audit"})}
+                elif "vitals" in low or "thermal" in low or "telemetry" in low:
+                    import plugins.thermal_guardian as _tg
+                    return {"reply": _tg.run({"action": "vitals"})}
+                elif "mission" in low or "sweep" in low:
+                    import plugins.mission_commander as _mc
+                    return {"reply": _mc.run({"action": "execute_sweep"})}
+                elif "speak" in low or "tts" in low:
+                    import plugins.sovereign_voice_synth as _svs
+                    msg = low.replace("speak", "").replace("tts", "").strip()
+                    return {"reply": _svs.run({"action": "speak", "text": msg} if msg else {"action": "speak"})}
                 elif "watchfolder" in low or "inbox" in low:
                     import plugins.watchfolder_alchemist as _wa
                     return {"reply": _wa.run({"action": "scan"})}
