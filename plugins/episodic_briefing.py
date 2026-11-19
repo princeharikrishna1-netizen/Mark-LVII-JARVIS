@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Long-Term Episodic Memory & Executive Briefing Engine (Pro Level 5)
 Stores persistent episodic events in SQLite (memory/episodic_memory.db) and generates
 concise executive briefings summarizing system health, watcher alerts, and recent runs.

@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Smart Print & Document Pipeline Pro (HP LaserJet 1020 Plus - 30/30)
 Tailored for Hari's HP LaserJet 1020 Plus printer with Legal-size page layout preference:
 - status: Checks HP LaserJet 1020 Plus online status, driver state, and pending job count

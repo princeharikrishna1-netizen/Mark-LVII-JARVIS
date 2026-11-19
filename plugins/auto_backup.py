@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Automatic Snapshot Backup & Retention Engine (Level 6 Supreme - 29/29)
 Creates clean compressed ZIP snapshots of Mark-LVII in memory/backups/ (excluding cache/temp files),
 automatically prunes older snapshots beyond the retention limit (keep latest 5), and supports daily auto-boot backups.

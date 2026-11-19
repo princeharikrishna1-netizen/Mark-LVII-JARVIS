@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Android Mobile Control Bridge v2 (Pro Level 5+)
 Operates Hari's Android mobile from PC via USB or Wireless Wi-Fi ADB:
 - Call by phone number OR Contact Name lookup on device

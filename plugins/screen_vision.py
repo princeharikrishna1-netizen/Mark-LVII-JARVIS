@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: AI Screen Vision & Multimodal Analyzer v2 (Level 6 Supreme - 29/29)
 Gives Mark-LVII true visual perception across Windows 11 PC and Android Mobile:
 - pc_capture & mobile_capture: Live screen capture to dashboard/static/

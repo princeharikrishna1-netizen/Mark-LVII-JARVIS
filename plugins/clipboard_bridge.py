@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Cross-Device Clipboard Sync Bridge (PC <-> iPad <-> Android - 31/31)
 Syncs text and links instantaneously between Hari's Windows 11 PC, iOS iPad HUD, and Android Mobile:
 - read_pc / write_pc: Reads or writes Windows 11 system clipboard via PowerShell Get-Clipboard/Set-Clipboard

@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Self-Evolution Auto-Promoter (Level 4 Autonomous Loop)
 Validates, sandbox-tests, and promotes evolved scripts from memory/evolved_scripts/
 into active JARVIS plugins and registers them with master_orchestrator.

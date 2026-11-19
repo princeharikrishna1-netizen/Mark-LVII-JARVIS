@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Multi-Device Smart Routines Automation Engine (Pro Level 6)
 Executes multi-step coordinated routines across Windows 11 PC, Android Mobile, and JARVIS core:
 - work_mode: PC diagnostics + mobile mute + episodic checkpoint

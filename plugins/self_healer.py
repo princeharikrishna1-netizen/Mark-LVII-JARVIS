@@ -1,4 +1,4 @@
-﻿"""
+"""
 JARVIS Plugin: Self-Healing Watchdog & Crash Recovery Engine (Pro Level 5)
 Audits all plugins & core files for syntax/import integrity, quarantines broken plugins
 before they can crash live sessions, and auto-heals missing/corrupt memory stores.
