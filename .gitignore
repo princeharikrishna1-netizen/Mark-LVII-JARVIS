@@ -8,3 +8,10 @@ __pycache__/
 *.zip
 .venv/
 venv/
+*.py[cod]
+*.bak
+*.tmp
+*.old
+*.orig
+.DS_Store
+Thumbs.db
