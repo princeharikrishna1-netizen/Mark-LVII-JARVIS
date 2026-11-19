@@ -27,7 +27,7 @@ def ensure_shortcuts(force: bool = False) -> str:
     bat_file = repo_dir / "Start_JARVIS_HUD.bat"
     if not bat_file.exists():
         bat_file.write_text(
-            '@echo off\r\ncd /d "%~dp0"\r\nstart "JARVIS Mark-LVII Core" python main.py\r\n'
+            '@echo off\r\ncd /d "%~dp0"\r\n"C:\\Program Files\\Git\\cmd\\git.exe" pull --rebase --autostash origin main 2>nul\r\nstart "JARVIS Mark-LVII Core" python main.py\r\n'
             'timeout /t 3 /nobreak >nul\r\nstart "" "http://127.0.0.1:8000/autonomous"\r\n',
             encoding="utf-8",
         )

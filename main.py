@@ -1792,17 +1792,7 @@ class JarvisLive:
 
     async def _listen_audio(self):
         try:
-            import atexit as _atexit_cs, subprocess as _sp_cs
-        def _atexit_cloud_sync():
-            try:
-                _g = r'C:\Program Files\Git\cmd\git.exe'
-                _sp_cs.run([_g, 'add', '-A'], capture_output=True, timeout=6)
-                _sp_cs.run([_g, 'commit', '-m', 'Auto-Sync on JARVIS exit'], capture_output=True, timeout=6)
-                _sp_cs.run([_g, 'push', 'origin', 'main'], capture_output=True, timeout=12)
-            except Exception:
-                pass
-        _atexit_cs.register(_atexit_cloud_sync)
-        import plugins.desktop_shortcuts as _dsc; _dsc.ensure_shortcuts(False); import plugins.laptop_wakeword_daemon as _lwd
+            import plugins.desktop_shortcuts as _dsc; _dsc.ensure_shortcuts(False); import plugins.laptop_wakeword_daemon as _lwd; _lwd.run({'action': 'mute_pc'})
             _lwd.run({'action': 'detect'})
         except Exception:
             pass
