@@ -1,70 +1,65 @@
 """
-JARVIS Plugin: Cross-Machine Desktop Shortcut Auto-Provisioner
-Automatically creates 'Start JARVIS.lnk' and 'Start JARVIS Pro.lnk' on the current Windows machine's
-Desktop pointing directly to this repository's local path (works on any laptop or PC after git clone).
+JARVIS Plugin: Single Unified Desktop Shortcut Provisioner
+Maintains ONLY ONE clean launcher ('Start JARVIS Pro.lnk') on the user's Desktop
+that auto-pulls GitHub cloud updates, boots JARVIS Core, and launches the MCU 3D Holographic HUD (/mcu).
 """
 from __future__ import annotations
-import subprocess
+import os, subprocess
 from pathlib import Path
 
 PLUGIN = {
     "name": "desktop_shortcuts",
-    "description": "Auto-creates 'Start JARVIS' and 'Start JARVIS Pro' shortcuts on any laptop/PC Desktop.",
+    "description": "Creates and maintains a single unified 'Start JARVIS Pro' shortcut on Desktop.",
     "tier": "core",
-    "brief": "Auto-provisions Desktop launch shortcuts on any Windows machine.",
+    "brief": "Single Desktop Launcher Provisioner (Start JARVIS Pro).",
     "parameters": {
         "type": "OBJECT",
         "properties": {
-            "action": {"type": "STRING", "description": "One of: 'ensure', 'force_create', or 'status'"}
+            "action": {"type": "STRING", "description": "One of: 'create', 'status'"}
         },
         "required": ["action"],
     },
 }
 
 
-def ensure_shortcuts(force: bool = False) -> str:
-    repo_dir = Path(".").resolve()
-    bat_file = repo_dir / "Start_JARVIS_HUD.bat"
-    if not bat_file.exists():
-        bat_file.write_text(
-            '@echo off\r\ncd /d "%~dp0"\r\n"C:\\Program Files\\Git\\cmd\\git.exe" pull --rebase --autostash origin main 2>nul\r\nstart "JARVIS Mark-LVII Core" python main.py\r\n'
-            'timeout /t 3 /nobreak >nul\r\nstart "" "http://127.0.0.1:8000/mcu"\r\n',
-            encoding="utf-8",
-        )
-
-    ps = (
-        "$ws = New-Object -ComObject WScript.Shell; "
-        "$desk = [Environment]::GetFolderPath('Desktop'); "
-        "$created = @(); "
-        "foreach ($name in @('Start JARVIS.lnk', 'Start JARVIS Pro.lnk')) { "
-        "  $lnk = Join-Path $desk $name; "
-        f"  $need = {'$true' if force else '$false'}; "
-        "  if (-not (Test-Path $lnk)) { $need = $true } "
-        "  else { "
-        "    $existing = $ws.CreateShortcut($lnk); "
-        f"    if ($existing.TargetPath -ne '{bat_file}') {{ $need = $true }} "
-        "  } "
-        "  if ($need) { "
-        "    $sc = $ws.CreateShortcut($lnk); "
-        f"    $sc.TargetPath = '{bat_file}'; "
-        f"    $sc.WorkingDirectory = '{repo_dir}'; "
-        "    $sc.IconLocation = 'shell32.dll,21'; "
-        "    $sc.Description = 'Launch JARVIS Mark-LVII (62/62 Omniscience + Autonomous HUD)'; "
-        "    $sc.Save(); "
-        "    $created += $name; "
-        "  } "
-        "} "
-        "if ($created.Count -gt 0) { Write-Output ('Created/Updated: ' + ($created -join ', ')) } "
-        "else { Write-Output 'Verified on Desktop' }"
+def ensure_shortcuts(force_log: bool = False) -> str:
+    root = Path.cwd().resolve()
+    bat_path = root / "Start_JARVIS_HUD.bat"
+    bat_content = (
+        '@echo off\r\n'
+        'cd /d "%~dp0"\r\n'
+        'echo [JARVIS Cloud Sync] Checking for latest updates from GitHub...\r\n'
+        '"C:\\Program Files\\Git\\cmd\\git.exe" pull --rebase --autostash origin main 2>nul\r\n'
+        'start "JARVIS Mark-LVII Core" python main.py\r\n'
+        'timeout /t 3 /nobreak >nul\r\n'
+        'start "" "http://127.0.0.1:8000/mcu"\r\n'
     )
-    r = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, timeout=10)
-    return (r.stdout or r.stderr or "OK").strip()
+    bat_path.write_text(bat_content, encoding="utf-8")
+
+    desktop = Path(os.path.expanduser("~")) / "Desktop"
+    old_lnk = desktop / "Start JARVIS.lnk"
+    if old_lnk.exists():
+        try:
+            old_lnk.unlink()
+        except Exception:
+            pass
+
+    pro_lnk = desktop / "Start JARVIS Pro.lnk"
+    ps_cmd = (
+        f'$ws = New-Object -ComObject WScript.Shell; '
+        f'$s = $ws.CreateShortcut("{pro_lnk}"); '
+        f'$s.TargetPath = "{bat_path}"; '
+        f'$s.WorkingDirectory = "{root}"; '
+        f'$s.IconLocation = "shell32.dll,238"; '
+        f'$s.Description = "Launch JARVIS Mark-LVII Core + MCU 3D Holographic HUD"; '
+        f'$s.Save()'
+    )
+    subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], capture_output=True)
+    return f"Hari, Single Desktop Launcher ('Start JARVIS Pro') verified on Desktop!"
 
 
 def run(parameters: dict, player=None, session_memory=None) -> str:
-    act = (parameters.get("action") or "ensure").strip().lower()
-    res = ensure_shortcuts(force=(act == "force_create"))
-    reply = f"Hari, Desktop Shortcuts ({res}) -> Ready on this machine's Desktop!"
+    reply = ensure_shortcuts(True)
     if player:
         try:
             player.write_log(f"JARVIS: {reply}")
