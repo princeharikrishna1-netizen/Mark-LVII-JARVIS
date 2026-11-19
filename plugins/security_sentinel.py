@@ -74,13 +74,13 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         )
 
         if mode == "usb":
-            reply = f"Security USB check, Sir: {usb_msg}"
+            reply = f"Security USB check, Hari: {usb_msg}"
         elif mode == "network":
-            reply = f"Security network check, Sir: {net_msg}"
+            reply = f"Security network check, Hari: {net_msg}"
         else:
-            reply = f"Security Sentinel scan complete, Sir. {usb_msg} {net_msg}"
+            reply = f"Security Sentinel scan complete, Hari. {usb_msg} {net_msg}"
     except Exception as e:
-        reply = f"Sir, security sentinel encountered an error: {e}"
+        reply = f"Hari, security sentinel encountered an error: {e}"
 
     if player:
         try:

@@ -30,21 +30,21 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         if act == "http_trigger" and port.startswith("http"):
             with urllib.request.urlopen(port, timeout=4) as resp:
                 body = resp.read().decode("utf-8", errors="ignore")[:120]
-            reply = f"IoT Hardware endpoint triggered ({port}), Sir. Response: {body or 'OK'}."
+            reply = f"IoT Hardware endpoint triggered ({port}), Hari. Response: {body or 'OK'}."
         elif act == "send_serial" and port and cmd:
             try:
                 import serial  # type: ignore
                 with serial.Serial(port, 9600, timeout=2) as ser:
                     ser.write((cmd + "\n").encode("utf-8"))
-                reply = f"Robotics command '{cmd}' transmitted to {port}, Sir."
+                reply = f"Robotics command '{cmd}' transmitted to {port}, Hari."
             except ImportError:
-                reply = f"Sir, pyserial is not installed yet (run 'pip install pyserial') to send '{cmd}' to {port}."
+                reply = f"Hari, pyserial is not installed yet (run 'pip install pyserial') to send '{cmd}' to {port}."
         else:
             out = subprocess.check_output(["powershell", "-Command", "[System.IO.Ports.SerialPort]::GetPortNames()"], text=True).strip()
             ports = [p.strip() for p in out.splitlines() if p.strip()]
-            reply = f"Active Robotics/Serial COM ports detected, Sir: {', '.join(ports)}." if ports else "Sir, no active USB Serial/COM robotics controllers detected right now."
+            reply = f"Active Robotics/Serial COM ports detected, Hari: {', '.join(ports)}." if ports else "Hari, no active USB Serial/COM robotics controllers detected right now."
     except Exception as e:
-        reply = f"Sir, Robotics Bridge error: {e}"
+        reply = f"Hari, Robotics Bridge error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

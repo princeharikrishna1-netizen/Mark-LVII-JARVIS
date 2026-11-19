@@ -47,17 +47,17 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         if act == "register":
             state["nodes"][node] = {"role": "worker", "status": "online", "last_seen": datetime.now().strftime("%Y-%m-%d %I:%M %p")}
             _save_state(state)
-            reply = f"Distributed Intelligence: Node '{node}' registered under Master '{state['master']}', Sir."
+            reply = f"Distributed Intelligence: Node '{node}' registered under Master '{state['master']}', Hari."
         elif act == "delegate" and task:
             job_id = len(state["queue"]) + 1
             state["queue"].append({"id": job_id, "node": node, "task": task, "status": "dispatched", "time": datetime.now().strftime("%I:%M %p")})
             _save_state(state)
-            reply = f"Task #{job_id} dispatched to node '{node}', Sir: '{task}'."
+            reply = f"Task #{job_id} dispatched to node '{node}', Hari: '{task}'."
         else:
             node_list = ", ".join(f"{k} ({v['status']})" for k, v in state["nodes"].items()) or "None registered yet"
-            reply = f"Distributed Mesh Status, Sir: Master='{state['master']}' | Worker Nodes: {node_list} | Queued Jobs: {len(state['queue'])}."
+            reply = f"Distributed Mesh Status, Hari: Master='{state['master']}' | Worker Nodes: {node_list} | Queued Jobs: {len(state['queue'])}."
     except Exception as e:
-        reply = f"Sir, Distributed Node error: {e}"
+        reply = f"Hari, Distributed Node error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

@@ -40,21 +40,21 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
     try:
         plans = _load_plans()
         if act == "list":
-            reply = "Strategic Plans on file, Sir: " + " | ".join(f"Plan #{p['id']} [{p['status']}]: {p['objective']}" for p in plans[-4:]) if plans else "Sir, no active strategic plans on record."
+            reply = "Strategic Plans on file, Hari: " + " | ".join(f"Plan #{p['id']} [{p['status']}]: {p['objective']}" for p in plans[-4:]) if plans else "Hari, no active strategic plans on record."
         elif act == "complete" and plan_id is not None:
             for p in plans:
                 if p.get("id") == int(plan_id): p["status"] = "completed"
             _save_plans(plans)
-            reply = f"Strategic Plan #{plan_id} marked as completed, Sir."
+            reply = f"Strategic Plan #{plan_id} marked as completed, Hari."
         elif not objective:
-            reply = "Sir, specify the objective you want a strategic plan for."
+            reply = "Hari, specify the objective you want a strategic plan for."
         else:
             new_id = len(plans) + 1
             plans.append({"id": new_id, "timestamp": datetime.now().strftime("%Y-%m-%d %I:%M %p"), "objective": objective, "status": "active"})
             _save_plans(plans)
-            reply = f"Strategic Plan #{new_id} formulated for '{objective}', Sir: Phase 1 (Recon & Backup) -> Phase 2 (Modular Execution) -> Phase 3 (Integrity Verification)."
+            reply = f"Strategic Plan #{new_id} formulated for '{objective}', Hari: Phase 1 (Recon & Backup) -> Phase 2 (Modular Execution) -> Phase 3 (Integrity Verification)."
     except Exception as e:
-        reply = f"Sir, Strategic Planner error: {e}"
+        reply = f"Hari, Strategic Planner error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

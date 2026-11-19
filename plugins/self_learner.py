@@ -41,19 +41,19 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         lessons = _load_lessons()
         if act in ("learn", "record", "save", "add"):
             if not lesson:
-                reply = "Sir, tell me what mistake or rule I should learn from."
+                reply = "Hari, tell me what mistake or rule I should learn from."
             else:
                 lessons.append({"id": len(lessons) + 1, "timestamp": datetime.now().strftime("%Y-%m-%d %I:%M %p"), "context": context, "lesson": lesson})
                 _save_lessons(lessons)
-                reply = f"Lesson internalized, Sir [{context}]: '{lesson}'."
+                reply = f"Lesson internalized, Hari [{context}]: '{lesson}'."
         elif act == "recall" and lesson:
             q = lesson.lower()
             matches = [l for l in reversed(lessons) if q in l.get("lesson", "").lower() or q in l.get("context", "").lower()]
-            reply = f"Found {len(matches)} lesson(s), Sir: " + " | ".join(f"[{m['context']}] {m['lesson']}" for m in matches[:4]) if matches else f"Sir, no lessons matching '{lesson}'."
+            reply = f"Found {len(matches)} lesson(s), Hari: " + " | ".join(f"[{m['context']}] {m['lesson']}" for m in matches[:4]) if matches else f"Hari, no lessons matching '{lesson}'."
         else:
-            reply = f"Total {len(lessons)} lesson(s) learned, Sir. Latest: " + " | ".join(f"#{l['id']} [{l['context']}]: {l['lesson']}" for l in reversed(lessons[-5:])) if lessons else "Sir, Self-Learning ledger is currently empty."
+            reply = f"Total {len(lessons)} lesson(s) learned, Hari. Latest: " + " | ".join(f"#{l['id']} [{l['context']}]: {l['lesson']}" for l in reversed(lessons[-5:])) if lessons else "Hari, Self-Learning ledger is currently empty."
     except Exception as e:
-        reply = f"Sir, Self-Learner error: {e}"
+        reply = f"Hari, Self-Learner error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

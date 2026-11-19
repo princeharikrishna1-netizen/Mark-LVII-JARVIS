@@ -15,7 +15,7 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
     cpu = psutil.cpu_percent(interval=0.1)
     score = round(({"low": 30, "medium": 60, "high": 90}.get(urg, 60) * 0.6) + (max(10, 100 - cpu) * 0.4), 1)
     verdict = "PROCEED IMMEDIATELY" if score >= 70 else ("PROCEED WITH CHECKPOINTS" if score >= 45 else "DEFER & QUEUE")
-    reply = f"Independent Decision for '{sit}', Sir [Score: {score}/100, CPU: {cpu}%]: {verdict}."
+    reply = f"Independent Decision for '{sit}', Hari [Score: {score}/100, CPU: {cpu}%]: {verdict}."
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

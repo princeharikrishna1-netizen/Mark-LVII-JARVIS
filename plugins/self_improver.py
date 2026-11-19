@@ -42,16 +42,16 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
             )
             target.write_text(code, encoding="utf-8")
             py_compile.compile(str(target), doraise=True)
-            reply = f"Self-Improvement complete, Sir. Synthesized and verified '{target}' for: {purpose}."
+            reply = f"Self-Improvement complete, Hari. Synthesized and verified '{target}' for: {purpose}."
         elif act == "list":
             scripts = [f.name for f in SANDBOX_DIR.glob("*.py")]
-            reply = f"Evolved sandbox modules ({len(scripts)}), Sir: {', '.join(scripts) or 'None yet'}."
+            reply = f"Evolved sandbox modules ({len(scripts)}), Hari: {', '.join(scripts) or 'None yet'}."
         else:
             plugin_count = len(list(Path("plugins").glob("*.py")))
             evolved_count = len(list(SANDBOX_DIR.glob("*.py")))
-            reply = f"Capability Audit, Sir: {plugin_count} active core plugins + {evolved_count} self-evolved sandbox scripts online."
+            reply = f"Capability Audit, Hari: {plugin_count} active core plugins + {evolved_count} self-evolved sandbox scripts online."
     except Exception as e:
-        reply = f"Sir, Self-Improver error: {e}"
+        reply = f"Hari, Self-Improver error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass
