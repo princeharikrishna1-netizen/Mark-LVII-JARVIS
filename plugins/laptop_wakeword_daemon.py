@@ -29,12 +29,17 @@ def has_microphone() -> tuple[bool, str]:
     try:
         import sounddevice as sd
         devs = sd.query_devices()
-        inputs = [d["name"] for d in devs if d.get("max_input_channels", 0) > 0]
+        ignore_kw = ("stereo mix", "wave out", "what u hear", "loopback", "primary sound capture")
+        inputs = [
+            d["name"] for d in devs
+            if d.get("max_input_channels", 0) > 0
+            and not any(k in d["name"].lower() for k in ignore_kw)
+        ]
         if inputs:
             return True, inputs[0]
     except Exception:
         pass
-    return False, "None"
+    return False, "None (Virtual Loopback Ignored)"
 
 
 def run(parameters: dict, player=None, session_memory=None) -> str:
