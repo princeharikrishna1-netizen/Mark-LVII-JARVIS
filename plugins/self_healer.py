@@ -1,9 +1,10 @@
+from __future__ import annotations
+import tempfile as _tmp_pyc, os as _os_pyc
 """
 JARVIS Plugin: Self-Healing Watchdog & Crash Recovery Engine (Pro Level 5)
 Audits all plugins & core files for syntax/import integrity, quarantines broken plugins
 before they can crash live sessions, and auto-heals missing/corrupt memory stores.
 """
-from __future__ import annotations
 import importlib.util
 import json
 import py_compile

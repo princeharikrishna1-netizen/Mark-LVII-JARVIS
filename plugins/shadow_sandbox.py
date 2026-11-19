@@ -1,9 +1,10 @@
+from __future__ import annotations
+import tempfile as _tmp_pyc, os as _os_pyc
 """
 JARVIS Plugin: Self-Replicating Shadow Sandbox & Zero-Downtime Hot-Swap Guard (Level 8 Singularity - 48/48)
 Clones candidate plugin code into an isolated temp sandbox (memory/shadow_sandbox/), runs AST + py_compile
 + contract verification (PLUGIN dict & run() signature), and only promotes verified modules into live plugins/.
 """
-from __future__ import annotations
 import ast
 import py_compile
 import shutil

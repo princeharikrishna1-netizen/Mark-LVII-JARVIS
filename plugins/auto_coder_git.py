@@ -1,3 +1,5 @@
+from __future__ import annotations
+import tempfile as _tmp_pyc, os as _os_pyc
 """
 JARVIS Plugin: Self-Coding Plugin Generator & GitHub Sync Bridge (Level 6 Supreme - 39/40)
 Generates verified Python plugins via Gemini AI (with automatic py_compile check) and syncs repo changes to GitHub:
@@ -5,7 +7,6 @@ Generates verified Python plugins via Gemini AI (with automatic py_compile check
 - git_status: Checks local git branch, modified files, and remote status
 - git_push: Stages, commits, and pushes updates to configured GitHub remote
 """
-from __future__ import annotations
 import json
 import os
 import py_compile

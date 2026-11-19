@@ -1,9 +1,10 @@
+from __future__ import annotations
+import tempfile as _tmp_pyc, os as _os_pyc
 """
 JARVIS Plugin: Self-Improvement Engine (#3)
 Generates new custom utility scripts/capabilities safely in a sandboxed folder,
 validates syntax, and logs capability upgrades.
 """
-from __future__ import annotations
 import py_compile
 from datetime import datetime
 from pathlib import Path
