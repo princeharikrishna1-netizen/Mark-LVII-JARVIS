@@ -465,6 +465,111 @@ async function toggleAirGestures() {
   }
 }
 
+
+// Module 62/62: Autonomous Action -> Spoken "Next em cheyamantav?" -> 60s Sleep -> "JARVIS" Wake-Word Engine
+let voiceRec = null, voiceMode = 'OFF', sleepTimer = null;
+
+function speakJarvisPrompt(text, onDone) {
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-IN';
+    u.rate = 1.02;
+    u.onend = () => { if (onDone) onDone(); };
+    window.speechSynthesis.speak(u);
+  } catch (e) {
+    if (onDone) onDone();
+  }
+}
+
+function resetOneMinuteSleepTimer() {
+  if (sleepTimer) clearTimeout(sleepTimer);
+  if (voiceMode !== 'ACTIVE') return;
+  sleepTimer = setTimeout(() => {
+    if (voiceMode === 'ACTIVE') {
+      voiceMode = 'SLEEP';
+      const btn = document.getElementById('liveMicBtn');
+      if (btn) btn.textContent = '\uD83D\uDCA4 SLEEPING (Say "JARVIS" to wake up)';
+      speakJarvisPrompt('No response for one minute. Going to sleep mode Hari. Say Jarvis anytime to wake me up.');
+      fetch('/api/autonomous/command', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({command: 'sleep'})
+      }).catch(()=>{});
+    }
+  }, 60000);
+}
+
+async function runVoiceCommandAndAskNext(cmdText) {
+  try {
+    pulseHoloSpeech(2600);
+    const res = await fetch('/api/autonomous/command', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({command: cmdText})
+    });
+    const data = await res.json();
+    const reply = (data && data.reply) ? data.reply : 'Done Hari.';
+    const outBox = document.getElementById('mobileConsoleOut') || document.getElementById('consoleOut');
+    if (outBox) outBox.textContent = reply + ' | Next em cheyamantav Hari?';
+    if (voiceMode === 'ACTIVE') {
+      speakJarvisPrompt(reply + '. Next em cheyamantav Hari?', () => resetOneMinuteSleepTimer());
+    }
+  } catch (e) {
+    if (voiceMode === 'ACTIVE') {
+      speakJarvisPrompt('Completed. Next em cheyamantav Hari?', () => resetOneMinuteSleepTimer());
+    }
+  }
+}
+
+function toggleContinuousMic() {
+  const btn = document.getElementById('liveMicBtn');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Please use Microsoft Edge or Google Chrome for live Voice Control.'); return; }
+  if (voiceMode !== 'OFF' && voiceRec) {
+    voiceMode = 'OFF';
+    if (sleepTimer) clearTimeout(sleepTimer);
+    voiceRec.stop();
+    if (btn) btn.textContent = '\uD83C\uDFA4 Always-On Voice Control (Works Minimized)';
+    return;
+  }
+  voiceRec = new SR();
+  voiceRec.lang = 'en-IN';
+  voiceRec.continuous = true;
+  voiceRec.interimResults = false;
+  voiceRec.onresult = (ev) => {
+    const rawSpeech = ev.results[ev.results.length - 1][0].transcript.trim();
+    if (!rawSpeech) return;
+    const low = rawSpeech.toLowerCase();
+    if (low === 'stop' || low === 'stop listening' || low === 'jarvis stop') {
+      voiceMode = 'OFF';
+      if (sleepTimer) clearTimeout(sleepTimer);
+      voiceRec.stop();
+      if (btn) btn.textContent = '\uD83C\uDFA4 Always-On Voice Control (Works Minimized)';
+      speakJarvisPrompt('Okay Hari, stopped listening.');
+      return;
+    }
+    if (voiceMode === 'SLEEP') {
+      if (low.includes('jarvis')) {
+        voiceMode = 'ACTIVE';
+        if (btn) btn.textContent = '\uD83D\uDFE2 ACTIVE LOOP (Say command or "Stop" | 1m Auto-Sleep)';
+        const afterWake = rawSpeech.replace(/.*jarvis[,\s]*/i, '').trim();
+        if (afterWake) runVoiceCommandAndAskNext(afterWake);
+        else speakJarvisPrompt('Yes Hari, active! Cheppandi next em cheyamantav?', () => resetOneMinuteSleepTimer());
+      }
+      return;
+    }
+    if (voiceMode === 'ACTIVE') {
+      resetOneMinuteSleepTimer();
+      const cleanCmd = rawSpeech.replace(/^jarvis[,\s]*/i, '').trim();
+      if (cleanCmd) runVoiceCommandAndAskNext(cleanCmd);
+    }
+  };
+  voiceRec.onend = () => { if (voiceMode !== 'OFF') { try { voiceRec.start(); } catch (e) {} } };
+  voiceMode = 'ACTIVE';
+  voiceRec.start();
+  if (btn) btn.textContent = '\uD83D\uDFE2 ACTIVE LOOP (Say command or "Stop" | 1m Auto-Sleep)';
+  speakJarvisPrompt('Active Hari! Cheppandi, em cheyamantav?', () => resetOneMinuteSleepTimer());
+}
+
 </script>
     <div class="card" style="margin-bottom:16px; border-color: var(--gold);">
     <div class="section-title">&#128424; HP LaserJet 1020 Plus ? Legal-Size Print Desk</div>
