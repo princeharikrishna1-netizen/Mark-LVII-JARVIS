@@ -1144,7 +1144,7 @@ class DashboardServer:
                 "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
                 "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
                 "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm",
-                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox"
+                "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "spatial_gestures", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield"
             ]
             mod_list = [{"name": m, "online": (pdir / f"{m}.py").exists()} for m in mods]
             runs_f = _P("memory/orchestrator_runs.json")
@@ -1261,6 +1261,18 @@ class DashboardServer:
                 elif "health" in low or "audio guard" in low or "mic check" in low:
                     import plugins.voice_health_guard as _vhg
                     return {"reply": _vhg.run({"action": "check"})}
+                elif "watchfolder" in low or "inbox" in low:
+                    import plugins.watchfolder_alchemist as _wa
+                    return {"reply": _wa.run({"action": "scan"})}
+                elif "knowledge graph" in low or "graph" in low:
+                    import plugins.knowledge_graph as _kg
+                    return {"reply": _kg.run({"action": "status"})}
+                elif "persona" in low or "rayalaseema" in low:
+                    import plugins.persona_matrix as _pm
+                    return {"reply": _pm.run({"action": "cycle"})}
+                elif "sentinel" in low or "seal" in low:
+                    import plugins.sentinel_shield as _sh
+                    return {"reply": _sh.run({"action": "verify"})}
                 elif "precog" in low or "predict" in low:
                     import plugins.precog_engine as _pe
                     return {"reply": _pe.run({"action": "predict"})}

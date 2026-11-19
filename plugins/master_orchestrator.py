@@ -48,7 +48,7 @@ SUB_MODULES = [
     "distributed_node", "strategic_planner", "security_sentinel", "adaptive_persona",
     "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
     "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
-    "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm", "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox",
+    "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm", "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield",
 ]
 
 
