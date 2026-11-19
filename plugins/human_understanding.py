@@ -31,9 +31,9 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
             state, pacing = "High Momentum / Creative Focus", "Match enthusiasm with proactive technical depth."
         else:
             state, pacing = "Calm / Focused", "Maintain clear, collaborative, and balanced interaction."
-        reply = f"Human Understanding Assessment, Sir: Detected state='{state}'. Interaction strategy: {pacing}"
+        reply = f"Human Understanding Assessment, Hari: Detected state='{state}'. Interaction strategy: {pacing}"
     except Exception as e:
-        reply = f"Sir, Human Understanding error: {e}"
+        reply = f"Hari, Human Understanding error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

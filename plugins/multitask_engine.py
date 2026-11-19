@@ -21,7 +21,7 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
     t0 = time.perf_counter()
     with ThreadPoolExecutor(max_workers=len(tlist) or 1) as pool:
         res = list(pool.map(_worker, tlist))
-    reply = f"Multitasking complete ({len(tlist)} parallel tasks in {round((time.perf_counter()-t0)*1000, 1)}ms), Sir: " + " | ".join(res)
+    reply = f"Multitasking complete ({len(tlist)} parallel tasks in {round((time.perf_counter()-t0)*1000, 1)}ms), Hari: " + " | ".join(res)
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

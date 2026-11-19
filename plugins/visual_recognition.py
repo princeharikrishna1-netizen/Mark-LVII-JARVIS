@@ -33,20 +33,20 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
                 cap = cv2.VideoCapture(0)
                 ok = cap.isOpened()
                 cap.release()
-                reply = "Optical Camera Sensor is ONLINE and ready for object recognition, Sir." if ok else "Sir, no active webcam sensor detected on index 0."
+                reply = "Optical Camera Sensor is ONLINE and ready for object recognition, Hari." if ok else "Hari, no active webcam sensor detected on index 0."
             except ImportError:
-                reply = "Sir, OpenCV (cv2) is not installed for direct webcam feed; screen visual sensor is active."
+                reply = "Hari, OpenCV (cv2) is not installed for direct webcam feed; screen visual sensor is active."
         else:
             try:
                 from PIL import ImageGrab  # type: ignore
                 img = ImageGrab.grab()
                 out_path = CAPTURE_DIR / f"frame_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
                 img.save(out_path)
-                reply = f"Visual Frame captured ({img.width}x{img.height} px) and indexed at '{out_path}', Sir. Ready for object & UI inspection."
+                reply = f"Visual Frame captured ({img.width}x{img.height} px) and indexed at '{out_path}', Hari. Ready for object & UI inspection."
             except ImportError:
-                reply = "Sir, Pillow ImageGrab unavailable; use 'analyze_screen_visually' plugin for active screen inspection."
+                reply = "Hari, Pillow ImageGrab unavailable; use 'analyze_screen_visually' plugin for active screen inspection."
     except Exception as e:
-        reply = f"Sir, Visual Recognition error: {e}"
+        reply = f"Hari, Visual Recognition error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

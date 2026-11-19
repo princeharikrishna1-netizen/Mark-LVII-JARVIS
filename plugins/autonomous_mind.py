@@ -40,12 +40,12 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         decisions = _load_json(DECISIONS_FILE)
         if act == "history":
             if not decisions:
-                reply = "Sir, Autonomous Mind has no logged decisions yet."
+                reply = "Hari, Autonomous Mind has no logged decisions yet."
             else:
                 recent = list(reversed(decisions[-4:]))
-                reply = "Recent autonomous decisions, Sir: " + " | ".join(f"[{d['timestamp']}] {d['goal']} -> {d['decision']}" for d in recent)
+                reply = "Recent autonomous decisions, Hari: " + " | ".join(f"[{d['timestamp']}] {d['goal']} -> {d['decision']}" for d in recent)
         elif not goal:
-            reply = "Sir, provide a goal for my Autonomous Thinking engine to evaluate."
+            reply = "Hari, provide a goal for my Autonomous Thinking engine to evaluate."
         else:
             cpu = psutil.cpu_percent(interval=0.1)
             ram = psutil.virtual_memory().percent
@@ -57,9 +57,9 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
             decisions.append({"id": len(decisions) + 1, "timestamp": datetime.now().strftime("%Y-%m-%d %I:%M %p"), "goal": goal, "safety_tier": safety_tier, "decision": decision_text})
             _save_json(DECISIONS_FILE, decisions)
             lesson_note = f" Past lesson applied: '{relevant[0]}'." if relevant else ""
-            reply = f"Autonomous evaluation complete, Sir (CPU {cpu}%, RAM {ram}%). Mode: {safety_tier}.{lesson_note}"
+            reply = f"Autonomous evaluation complete, Hari (CPU {cpu}%, RAM {ram}%). Mode: {safety_tier}.{lesson_note}"
     except Exception as e:
-        reply = f"Sir, Autonomous Mind error: {e}"
+        reply = f"Hari, Autonomous Mind error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass

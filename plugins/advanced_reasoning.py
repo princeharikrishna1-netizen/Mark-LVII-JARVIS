@@ -32,9 +32,9 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         REASON_LOG.parent.mkdir(parents=True, exist_ok=True)
         traces = json.loads(REASON_LOG.read_text(encoding="utf-8")) if REASON_LOG.exists() else []
         if act == "history":
-            reply = "Recent reasoning traces, Sir: " + " | ".join(f"[{t['timestamp']}] {t['scenario']}" for t in traces[-3:]) if traces else "Sir, no reasoning traces logged yet."
+            reply = "Recent reasoning traces, Hari: " + " | ".join(f"[{t['timestamp']}] {t['scenario']}" for t in traces[-3:]) if traces else "Hari, no reasoning traces logged yet."
         elif not scenario:
-            reply = "Sir, describe the complex situation or options you want me to analyze."
+            reply = "Hari, describe the complex situation or options you want me to analyze."
         else:
             entry = {
                 "id": len(traces) + 1,
@@ -45,13 +45,13 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
             traces.append(entry)
             REASON_LOG.write_text(json.dumps(traces, indent=2, ensure_ascii=False), encoding="utf-8")
             reply = (
-                f"Advanced Reasoning Analysis for '{scenario}', Sir: "
+                f"Advanced Reasoning Analysis for '{scenario}', Hari: "
                 f"(1) Variables & constraints isolated -> "
                 f"(2) Secondary failure modes evaluated -> "
                 f"(3) Recommended resolution: Execute modularly with telemetry checkpoints and fallback rollback."
             )
     except Exception as e:
-        reply = f"Sir, Advanced Reasoning error: {e}"
+        reply = f"Hari, Advanced Reasoning error: {e}"
     if player:
         try: player.write_log(f"JARVIS: {reply}")
         except Exception: pass
