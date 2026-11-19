@@ -46,9 +46,9 @@ PLUGIN = {
 SUB_MODULES = [
     "autonomous_mind", "self_learner", "self_improver", "network_intel",
     "distributed_node", "strategic_planner", "security_sentinel", "adaptive_persona",
-    "robotics_bridge", "auto_executor", "advanced_reasoning", "human_understanding",
-    "computer_intelligence", "network_access", "visual_recognition", "advanced_learning",
-    "multitask_engine", "decision_matrix", "physical_actuator", "advanced_comm", "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "smart_routines", "screen_vision", "auto_backup", "smart_printer", "clipboard_bridge", "cron_scheduler", "macro_deck", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield", "legal_diff_auditor", "thermal_guardian", "mission_commander", "sovereign_voice_synth", "live_screen_mentor", "screen_data_harvester", "autonomous_data_typer", "copilot_daemon",
+    "robotics_bridge", "auto_executor", "advanced_reasoning",
+    "network_access", "visual_recognition",
+    "log_rotation", "autonomous_watcher", "self_promoter", "episodic_briefing", "self_healer", "mobile_bridge", "screen_vision", "smart_printer", "clipboard_bridge", "cron_scheduler", "voice_health_guard", "ghost_recorder", "time_machine", "deep_research_pdf", "vision_form_copilot", "auto_coder_git", "war_room_council", "chronos_memory", "dream_evolution", "precog_engine", "sonar_presence", "neural_mesh_sync", "shadow_sandbox", "watchfolder_alchemist", "knowledge_graph", "persona_matrix", "sentinel_shield", "thermal_guardian", "sovereign_voice_synth", "live_screen_mentor", "screen_data_harvester", "autonomous_data_typer", "copilot_daemon",
 ]
 
 
@@ -83,7 +83,7 @@ def _background_deep_audit(run_id: int, goal: str, player=None) -> None:
     t0 = time.perf_counter()
     net_scan = _invoke_plugin("network_intel", {"action": "scan"})
     sec_scan = _invoke_plugin("security_sentinel", {"action": "scan"})
-    ws_stats = _invoke_plugin("computer_intelligence", {"action": "workspace_stats", "target_path": "."})
+    ws_stats = _invoke_plugin({"action": "workspace_stats", "target_path": "."})
     log_maint = _invoke_plugin("log_rotation", {"action": "rotate"})
     cpu_after = psutil.cpu_percent(interval=0.4)
     ram_after = psutil.virtual_memory().percent
@@ -146,9 +146,9 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
 
         else:
             t0 = time.perf_counter()
-            decision = _invoke_plugin("decision_matrix", {"situation": goal, "urgency": urgency})
+            decision = _invoke_plugin({"situation": goal, "urgency": urgency})
             plan = _invoke_plugin("strategic_planner", {"action": "create", "objective": goal})
-            parallel = _invoke_plugin("multitask_engine", {
+            parallel = _invoke_plugin({
                 "action": "execute",
                 "tasks": "Diagnostics Init, Network Probe, Resource Optimization"
             })
