@@ -177,6 +177,42 @@ def _desktop_send(app_name: str, receiver: str, message: str) -> str:
         platform=app_name, to=receiver,
     )
 
+def _lookup_contact(receiver: str) -> str:
+    try:
+        cp = _base_dir() / "memory" / "contacts.json"
+        if cp.exists():
+            data = json.loads(cp.read_text(encoding="utf-8"))
+            for k, v in data.items():
+                if k.lower() == receiver.lower().strip() and str(v).strip():
+                    return str(v).strip()
+    except Exception:
+        pass
+    return receiver
+
+
+def _send_email(receiver: str, message: str) -> str:
+    import urllib.parse
+    target = _lookup_contact(receiver)
+    subj = "Message from Hari (via JARVIS)"
+    body = message
+    if "||" in message:
+        parts = message.split("||", 1)
+        subj, body = parts[0].strip(), parts[1].strip()
+    url = (
+        "https://mail.google.com/mail/?view=cm&fs=1"
+        f"&to={urllib.parse.quote(target)}"
+        f"&su={urllib.parse.quote(subj)}"
+        f"&body={urllib.parse.quote(body)}"
+    )
+    if not _open_browser_url(url):
+        return outcome.failed("send_message", "Gmail could not be opened in browser", platform="Email", to=target)
+    return outcome.unverified(
+        "send_message",
+        f"Gmail compose window opened for {target} with your message pre-filled - click Send in browser to confirm",
+        platform="Email", to=target
+    )
+
+
 def _send_whatsapp(receiver: str, message: str) -> str:
     """WhatsApp goes through the verified driver when there is one.
 
@@ -298,8 +334,9 @@ def _send_messenger(receiver: str, message: str) -> str:
         platform="Messenger", to=receiver)
 
 _PLATFORM_MAP = [
-    ({"whatsapp", "wp", "wapp"},              _send_whatsapp),
-    ({"telegram", "tg"},                      _send_telegram),
+    ({"whatsapp", "wp", "wapp"},              lambda r, m: _send_whatsapp(_lookup_contact(r), m)),
+    ({"email", "gmail", "mail"},              _send_email),
+    ({"telegram", "tg"},                      lambda r, m: _send_telegram(_lookup_contact(r), m)),
     ({"instagram", "ig", "insta"},            _send_instagram),
     ({"signal"},                               _send_signal),
     ({"discord"},                              _send_discord),
@@ -307,7 +344,9 @@ _PLATFORM_MAP = [
 ]
 
 
-def _resolve_platform(platform_str: str):
+def _resolve_platform(platform_str: str, receiver: str = ""):
+    if "@" in _lookup_contact(receiver):
+        return _send_email
     key = platform_str.lower().strip()
     for keywords, handler in _PLATFORM_MAP:
         if any(k in key for k in keywords):
@@ -367,7 +406,7 @@ def _send_and_report(player, platform: str, receiver: str,
     thing this rewrite exists to stop.
     """
     try:
-        result = _resolve_platform(platform)(receiver, message_text)
+        result = _resolve_platform(platform, receiver)(receiver, message_text)
     except Exception as exc:
         print(f"[SendMessage] {type(exc).__name__}: {exc}")
         result = outcome.failed("send_message", f"it failed: {exc}",
@@ -435,7 +474,7 @@ TOOL = {
             },
             "platform": {
                 "type": "STRING",
-                "description": "Platform: WhatsApp, Telegram, etc."
+                "description": "Platform: WhatsApp, Email, Gmail, Telegram, etc."
             }
         },
         "required": [

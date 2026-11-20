@@ -1660,6 +1660,7 @@ class MainWindow(QMainWindow):
         _btn("🧠  MEMORY", self._open_memory_panel)
         _btn("🧩  PLUGINS", self._open_plugin_manager)
         _btn("⚙  PLUGIN SETTINGS", self._open_plugin_settings)
+        self._persona_btn = _btn("??  PERSONA: FORMAL", self._toggle_persona)
         # The button is built here with the rest of the drawer; the panel behind
         # it — and the whole providers package — is imported on the click. The
         # drawer used to stutter for a measured 2.104 seconds because a state
@@ -2832,6 +2833,18 @@ class MainWindow(QMainWindow):
         ov.show()
         ov.raise_()
         self._plugin_manager_overlay = ov   # keep a reference so it isn't GC'd
+
+    def _toggle_persona(self):
+        try:
+            from plugins import adaptive_persona
+            adaptive_persona.run({"action": "toggle"}, player=self)
+            mode = adaptive_persona.get_current_mode()
+            if hasattr(self, "_persona_btn"):
+                self._persona_btn.setText(f"??  PERSONA: {mode.upper()}")
+            if hasattr(self, "send_command"):
+                self.send_command(f"[System Persona Switch: {mode.upper()}] Acknowledge briefly in this persona style.")
+        except Exception as e:
+            self.write_log(f"SYS: Persona toggle error: {e}")
 
     def _open_plugin_settings(self):
         sections = self.get_plugin_settings() if self.get_plugin_settings else []

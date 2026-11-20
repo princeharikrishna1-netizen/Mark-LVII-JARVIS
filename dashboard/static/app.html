@@ -290,14 +290,52 @@
     }
 
     let _voiceActive = false;
+    let _recog = null;
     function doMic() {
       const micBtn = document.getElementById('mic-btn');
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        toast('Speech API unavailable in this browser - use text box');
+        sys('Browser SpeechRecognition unavailable (use HTTPS or Chrome/Safari).');
+        return;
+      }
       _voiceActive = !_voiceActive;
       if (_voiceActive) {
-        micBtn.classList.add('recording');
-        toast('🎤 Voice Command Listening Active');
-        sys('Voice command mode active — speak now.');
+        if (micBtn) micBtn.classList.add('recording');
+        toast('Wireless Mic ON - Speak to PC JARVIS');
+        sys('Wireless Mic active - speak your command...');
+        _recog = new SR();
+        _recog.lang = 'en-IN';
+        _recog.interimResults = false;
+        _recog.continuous = false;
+        _recog.onresult = (e) => {
+          const spoken = e.results[0][0].transcript;
+          const inp = document.getElementById('cmd-input') || document.querySelector('input[type="text"], textarea');
+          if (inp) {
+            inp.value = spoken;
+            const sendBtn = document.getElementById('send-btn') || document.querySelector('button[type="submit"]');
+            if (sendBtn) sendBtn.click();
+            else inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          }
+          toast('Sent: ' + spoken);
+        };
+        _recog.onerror = (e) => {
+          sys('Mic notice: ' + e.error);
+          _voiceActive = false;
+          if (micBtn) micBtn.classList.remove('recording');
+        };
+        _recog.onend = () => {
+          _voiceActive = false;
+          if (micBtn) micBtn.classList.remove('recording');
+        };
+        _recog.start();
       } else {
+        if (_recog) { try { _recog.stop(); } catch (_) {} }
+        if (micBtn) micBtn.classList.remove('recording');
+        toast('Wireless Mic Stopped');
+        sys('Wireless Mic stopped.');
+      }
+    } else {
         micBtn.classList.remove('recording');
         toast('🎤 Voice Command Stopped');
         sys('Voice command mode stopped.');
