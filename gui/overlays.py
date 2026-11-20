@@ -549,9 +549,46 @@ class PluginManagerOverlay(QWidget):
             empty.setFont(hud_font(8))
             empty.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent;")
             lay.addWidget(empty)
-
-        for p in plugins:
-            lay.addLayout(self._build_row(p))
+        else:
+            scroll = QScrollArea(self)
+            scroll.setWidgetResizable(True)
+            scroll.setFrameShape(QFrame.Shape.NoFrame)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            max_h = 440
+            if parent is not None and parent.height() > 220:
+                max_h = min(480, max(220, parent.height() - 160))
+            scroll.setFixedHeight(min(max_h, 32 * len(plugins) + 14))
+            scroll.setStyleSheet(f"""
+                QScrollArea {{ background: transparent; border: none; }}
+                QScrollBar:vertical {{
+                    background: rgba(0, 15, 22, 160);
+                    width: 6px;
+                    margin: 0px;
+                    border-radius: 3px;
+                }}
+                QScrollBar::handle:vertical {{
+                    background: {C.BORDER_B};
+                    min-height: 24px;
+                    border-radius: 3px;
+                }}
+                QScrollBar::handle:vertical:hover {{
+                    background: {C.PRI};
+                }}
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                    height: 0px;
+                }}
+            """)
+            inner = QWidget()
+            inner.setStyleSheet("background: transparent;")
+            inner_lay = QVBoxLayout(inner)
+            inner_lay.setContentsMargins(0, 2, 6, 2)
+            inner_lay.setSpacing(6)
+            for p in plugins:
+                inner_lay.addLayout(self._build_row(p))
+            inner_lay.addStretch(1)
+            scroll.setWidget(inner)
+            lay.addWidget(scroll)
 
         lay.addSpacing(4)
         close_btn = QPushButton("CLOSE")
@@ -1423,7 +1460,45 @@ class PluginSettingsOverlay(QWidget):
                 border-radius: 6px;
             }}
         """)
-        self._sections = sections or []
+        self._sections = list(sections) if sections else []
+        if not self._sections:
+            try:
+                from pathlib import Path
+                from memory.config_manager import get_plugin_config
+                pdir = Path(__file__).resolve().parent.parent / "plugins"
+                presets = {
+                    "smart_printer": [
+                        {"key": "default_printer", "type": "text", "label": "Default Printer", "default": "HP LaserJet 1020 Plus"},
+                        {"key": "duplex_mode", "type": "choice", "label": "Paper Mode", "options": ["Portrait Single-Sided", "Legal Single-Sided", "Auto"], "default": "Portrait Single-Sided"},
+                    ],
+                    "doc_to_excel": [
+                        {"key": "aadhaar_masking", "type": "choice", "label": "Aadhaar Format", "options": ["Unmasked (Full 12-Digit)", "Masked"], "default": "Unmasked (Full 12-Digit)"},
+                        {"key": "page_orientation", "type": "choice", "label": "Output Orientation", "options": ["Portrait", "Legal", "Landscape"], "default": "Portrait"},
+                    ],
+                    "mark85_suit_hud": [
+                        {"key": "hud_preset", "type": "choice", "label": "HUD Theme", "options": ["Mark 85 Holo Cyan", "Arc Reactor Blue", "Stealth Gold"], "default": "Mark 85 Holo Cyan"},
+                        {"key": "telemetry_hz", "type": "choice", "label": "Telemetry Refresh", "options": ["1s (Smooth)", "2s (Balanced)", "5s (Eco)"], "default": "1s (Smooth)"},
+                    ],
+                    "sentinel_shield": [
+                        {"key": "protection_level", "type": "choice", "label": "Integrity Lock", "options": ["SHA-256 Strict Lock", "Warn Only", "Off"], "default": "SHA-256 Strict Lock"},
+                    ],
+                }
+                for pf in sorted(pdir.glob("*.py")):
+                    if pf.name.startswith("_"):
+                        continue
+                    ns = pf.stem
+                    fields = presets.get(ns, [
+                        {"key": "mode", "type": "choice", "label": "Execution Mode", "options": ["Auto", "On-Demand", "Background"], "default": "Auto"},
+                        {"key": "custom_param", "type": "text", "label": "Custom Parameter / Target", "default": ""},
+                    ])
+                    self._sections.append({
+                        "namespace": ns,
+                        "title": f"? {ns.replace('_', ' ').upper()}",
+                        "fields": fields,
+                        "values": get_plugin_config(ns) or {},
+                    })
+            except Exception:
+                pass
         self._widgets: dict[tuple, object] = {}    # (namespace, key) -> input widget
         self._types:   dict[tuple, str]    = {}     # (namespace, key) -> field type
         self._status_labels: dict[str, QLabel] = {} # namespace -> status QLabel
@@ -1451,7 +1526,29 @@ class PluginSettingsOverlay(QWidget):
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
             scroll.setFrameShape(QFrame.Shape.NoFrame)
-            scroll.setStyleSheet("QScrollArea { background: transparent; }")
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scroll.setMinimumHeight(340)
+            scroll.setStyleSheet(f"""
+                QScrollArea {{ background: transparent; border: none; }}
+                QScrollBar:vertical {{
+                    background: rgba(0, 15, 22, 160);
+                    width: 6px;
+                    margin: 0px;
+                    border-radius: 3px;
+                }}
+                QScrollBar::handle:vertical {{
+                    background: {C.BORDER_B};
+                    min-height: 24px;
+                    border-radius: 3px;
+                }}
+                QScrollBar::handle:vertical:hover {{
+                    background: {C.PRI};
+                }}
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                    height: 0px;
+                }}
+            """)
             inner = QWidget()
             inner.setStyleSheet("background: transparent;")
             form = QVBoxLayout(inner)
