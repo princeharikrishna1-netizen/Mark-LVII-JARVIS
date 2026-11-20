@@ -54,7 +54,6 @@ def _grab_screen(out_path: Path) -> bool:
 
 
 def _ocr_image(img_path: Path, lang: str = "eng") -> str:
-    # 1. Try pytesseract / tesseract binary if installed
     tess_bin = shutil.which("tesseract") or r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     if Path(tess_bin).exists():
         try:
@@ -67,7 +66,6 @@ def _ocr_image(img_path: Path, lang: str = "eng") -> str:
         except Exception:
             pass
 
-    # 2. Fallback: Windows 11 built-in WinRT Media.Ocr via PowerShell (zero external dependencies)
     ps_script = f"""
 Add-Type -AssemblyName System.Runtime.WindowsRuntime
 $null = [Windows.Storage.StorageFile, Windows.Storage, ContentType=WindowsRuntime]
@@ -118,9 +116,7 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
         except Exception:
             clip_note = ""
         preview = extracted[:1200] + ("..." if len(extracted) > 1200 else "")
-        reply = f"Screen Radar extracted {len(extracted)} characters{clip_note}:
-
-{preview}"
+        reply = f"Screen Radar extracted {len(extracted)} characters{clip_note}:\n\n{preview}"
 
     if player:
         try:

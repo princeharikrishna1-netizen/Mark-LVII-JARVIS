@@ -6,11 +6,9 @@ Executes multi-step Windows workflows with single protocol commands:
 - Protocol Backup: Archives memory/ and extracted Excel workbooks into memory/backups/
 """
 from __future__ import annotations
-import json, os, shutil, subprocess, webbrowser
+import shutil, subprocess, webbrowser
 from datetime import datetime
 from pathlib import Path
-
-MACRO_FILE = Path("memory/custom_macros.json")
 
 PLUGIN = {
     "name": "hud_voice_macro",
@@ -38,7 +36,6 @@ def _backup_workspace() -> str:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     bdir = Path("memory/backups") / f"snapshot_{ts}"
     bdir.mkdir(parents=True, exist_ok=True)
-    copied = 0
     for src_name in ("memory", "config"):
         src = Path(src_name)
         if src.exists():
@@ -48,7 +45,6 @@ def _backup_workspace() -> str:
                 ignore=shutil.ignore_patterns("backups", "__pycache__", "*.tmp"),
                 dirs_exist_ok=True
             )
-            copied += 1
     return str(bdir)
 
 
@@ -113,12 +109,9 @@ def run(parameters: dict, player=None, session_memory=None) -> str:
 
         else:
             reply = (
-                "Available One-Word Protocols, Hari:
-"
-                "- 'Run Protocol Office' (Excel + Word + AP IGRS Portal + HP LaserJet 1020 Plus check)
-"
-                "- 'Run Protocol Night' (Dim display to 25% + Night Quiet mode + Daily Backup)
-"
+                "Available One-Word Protocols, Hari:\n"
+                "- 'Run Protocol Office' (Excel + Word + AP IGRS Portal + HP LaserJet 1020 Plus check)\n"
+                "- 'Run Protocol Night' (Dim display to 25% + Night Quiet mode + Daily Backup)\n"
                 "- 'Run Protocol Backup' (Snapshot memory & extracted workbooks)"
             )
     except Exception as e:
