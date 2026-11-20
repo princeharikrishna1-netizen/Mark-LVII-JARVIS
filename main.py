@@ -1,4 +1,8 @@
-﻿import platform as _platform
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+import platform as _platform
 import subprocess as _subprocess
 
 # ── Nuclear: force CREATE_NO_WINDOW on EVERY subprocess call on Windows ────────

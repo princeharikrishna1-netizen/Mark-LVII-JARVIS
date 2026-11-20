@@ -1844,6 +1844,7 @@ class MainWindow(QMainWindow):
         )
         self._content_display.setStyleSheet(f"""
             QTextEdit {{
+                font-family: 'Nirmala UI', 'Segoe UI', 'Noto Sans Telugu', sans-serif;
                 background: transparent;
                 color: {C.TEXT};
                 border: none;
