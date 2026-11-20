@@ -61,7 +61,8 @@ def _rz(a):
 
 def _with_alpha(col: QColor, a: float) -> QColor:
     c = QColor(col)
-    c.setAlphaF(max(0.0, min(1.0, a)))
+    boosted = (a * 1.9 + 0.08) if a > 0.01 else 0.0
+    c.setAlphaF(max(0.0, min(1.0, boosted)))
     return c
 
 
@@ -104,7 +105,7 @@ class Reactor3D:
     # ── motion ────────────────────────────────────────────────────────────────
     def step(self, dt: float, speaking: bool, thinking: bool, muted: bool) -> None:
         dt = min(0.10, max(0.0, dt))
-        rate = 0.12 if muted else 0.38 + (1.5 if thinking else 0.0) + (0.8 if speaking else 0.0)
+        rate = 0.25 if muted else 0.72 + (1.8 if thinking else 0.0) + (1.1 if speaking else 0.0)
         self.spin += dt * rate
 
     # ── projection ────────────────────────────────────────────────────────────

@@ -21,11 +21,11 @@ from PyQt6.QtGui import QColor, QFont, QPolygonF
 
 from gui.theme import C
 
-DISPLAY_FAMILIES = ["Segoe UI", "Noto Sans Telugu", "Nirmala UI", "Bahnschrift",
+DISPLAY_FAMILIES = ["Nirmala UI", "Segoe UI", "Noto Sans Telugu", "Bahnschrift",
                     "SF Pro Display", "Helvetica Neue", "Noto Sans", "DejaVu Sans"]
 MONO_FAMILIES = ["Cascadia Mono", "Consolas", "Noto Sans Telugu", "SF Mono", "Menlo",
                  "DejaVu Sans Mono", "Courier New"]
-DISPLAY_CSS = ("'Segoe UI', 'Noto Sans Telugu', 'Nirmala UI', 'Bahnschrift', "
+DISPLAY_CSS = ("'Nirmala UI', 'Segoe UI', 'Noto Sans Telugu', 'Bahnschrift', "
                "'SF Pro Display', 'Helvetica Neue', 'Noto Sans', 'DejaVu Sans', sans-serif")
 MONO_CSS = "'Cascadia Mono', 'Consolas', 'SF Mono', 'Menlo', 'DejaVu Sans Mono', monospace"
 
