@@ -124,11 +124,67 @@
       pointer-events:none; white-space:nowrap; box-shadow: 0 0 12px rgba(0,229,255,0.3);
     }
     #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ── PRECOG V3.1 floating intelligence panel ── */
+    #precog-launch { border-color:rgba(0,229,255,.55); color:var(--accent); }
+    #precog-overlay { position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center;
+      padding:18px; background:rgba(0,4,12,.78); backdrop-filter:blur(8px); }
+    #precog-overlay.open { display:flex; }
+    .precog-window { width:min(1040px,96vw); max-height:min(790px,92vh); overflow:auto; color:#dffaff;
+      background:linear-gradient(145deg,rgba(5,18,34,.98),rgba(5,10,22,.98)); border:1px solid rgba(0,229,255,.55);
+      border-radius:16px; box-shadow:0 0 35px rgba(0,229,255,.18),inset 0 0 25px rgba(0,229,255,.035); }
+    .precog-head { position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:10px; padding:14px 18px;
+      background:rgba(4,14,28,.97); border-bottom:1px solid rgba(0,229,255,.25); }
+    .precog-head strong { color:#00e5ff; letter-spacing:2px; font-size:13px; }
+    .precog-head small { color:#7796a8; font-size:10px; }
+    .precog-close { margin-left:auto; width:34px; height:34px; border:1px solid #ff6677; border-radius:9px;
+      color:#ff8290; background:rgba(255,70,90,.08); font-size:21px; cursor:pointer; }
+    .precog-body { padding:16px; display:grid; gap:13px; }
+    .precog-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .precog-card { min-width:0; padding:13px; border:1px solid rgba(0,229,255,.18); border-radius:11px;
+      background:rgba(0,229,255,.045); }
+    .precog-card .k { color:#7896a8; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; }
+    .precog-card .v { margin-top:7px; color:#e8fcff; font-size:25px; font-weight:700; }
+    .precog-card .sub { margin-top:3px; color:#7e9eae; font-size:10px; }
+    .precog-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:10px; }
+    .precog-card h3 { margin-bottom:10px; color:#00d9f5; font-size:11px; letter-spacing:1.4px; }
+    #precog-chart { width:100%; height:190px; display:block; }
+    .precog-process { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid rgba(0,229,255,.1); font-size:11px; }
+    .precog-process span:last-child { color:#8deaff; white-space:nowrap; }
+    #precog-findings { color:#b8d5df; font-size:11px; line-height:1.7; white-space:pre-line; }
+    .precog-state { display:inline-flex; align-items:center; gap:6px; color:#7dffbd; font-size:10px; letter-spacing:1px; }
+    .precog-state::before { content:''; width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; }
+    @media(max-width:700px) { #precog-overlay{padding:6px}.precog-window{width:100%;max-height:96vh}.precog-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.precog-grid{grid-template-columns:1fr}.precog-card .v{font-size:21px} }
+
   </style>
 </head>
 <body>
 <div style="background:#041326;border-bottom:1px solid #00f0ff44;padding:6px 14px;text-align:right;"><a href="/autonomous" style="color:#00f0ff;font-family:sans-serif;font-size:12px;font-weight:700;text-decoration:none;">&#9889; OPEN AUTONOMOUS HUD (22/22) &rarr;</a></div>
   <div id="toast"></div>
+
+  <div id="precog-overlay" role="dialog" aria-modal="true" aria-label="PRECOG Intelligence Monitor" onclick="if(event.target===this)closePrecog()">
+    <section class="precog-window">
+      <div class="precog-head">
+        <div><strong>PRECOG // INTELLIGENCE V3.1</strong><br><small>LIVE SYSTEM TELEMETRY · READ-ONLY MONITORING</small></div>
+        <span class="spacer"></span><span class="precog-state" id="precog-live-state">LIVE</span>
+        <button class="precog-close" onclick="closePrecog()" aria-label="Close PRECOG">×</button>
+      </div>
+      <div class="precog-body">
+        <div class="precog-kpis">
+          <div class="precog-card"><div class="k">CPU LOAD</div><div class="v" id="pc-cpu">--%</div><div class="sub">Current processor usage</div></div>
+          <div class="precog-card"><div class="k">RAM USAGE</div><div class="v" id="pc-ram">--%</div><div class="sub" id="pc-ram-sub">Memory trend collecting</div></div>
+          <div class="precog-card"><div class="k">DISK USED</div><div class="v" id="pc-disk">--%</div><div class="sub" id="pc-disk-sub">System drive</div></div>
+          <div class="precog-card"><div class="k">SYSTEM HEALTH</div><div class="v" id="pc-health">--/100</div><div class="sub" id="pc-health-sub">Calculating</div></div>
+        </div>
+        <div class="precog-grid">
+          <div class="precog-card"><h3>LIVE PERFORMANCE HISTORY</h3><canvas id="precog-chart" width="900" height="220"></canvas><div class="sub">CPU · RAM · Disk · recent samples</div></div>
+          <div class="precog-card"><h3>TOP MEMORY PROCESSES</h3><div id="precog-processes">Waiting for telemetry…</div></div>
+        </div>
+        <div class="precog-card"><h3>PRECOGNITIVE ANALYSIS</h3><div id="precog-findings">Connecting to PRECOG engine…</div></div>
+      </div>
+    </section>
+  </div>
+
   <header>
     <div class="logo"><em>J</em>.A.R.V.I.S. (Mark LXXXV)</div>
     <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
@@ -142,6 +198,7 @@
   <!-- Control Panel with Quick Chips and Persona Switcher -->
   <div class="control-panel">
     <div class="quick-bar">
+      <button class="q-chip" id="precog-launch" onclick="openPrecog()">◉ PRECOG MONITOR</button>
       <button class="q-chip" onclick="sendQuick('Screen meeda emundo chusi help cheyi')">🖥️ Screen Help</button>
       <button class="q-chip" onclick="sendQuick('System status mariyu CPU RAM usage check cheyi')">💻 System &amp; Performance</button>
       <button class="q-chip" onclick="sendQuick('Uploaded files list chupinchu')">📂 Uploaded Files</button>
@@ -276,7 +333,9 @@
       const cmd = transcript.toLowerCase();
       console.log("[Voice Command Detected]:", cmd);
 
-      if (cmd.includes('screen help') || cmd.includes('డ్యూటీ')) {
+      if (_isPrecogOpen(cmd)) { openPrecog(); return;
+      } else if (_isPrecogClose(cmd)) { closePrecog(); return;
+      } else if (cmd.includes('screen help') || cmd.includes('డ్యూటీ')) {
         sendQuick('Screen meeda emundo chusi help cheyi');
       } else if (cmd.includes('system status') || cmd.includes('system')) {
         sendQuick('System status mariyu CPU RAM usage check cheyi');
@@ -310,14 +369,8 @@
         _recog.continuous = false;
         _recog.onresult = (e) => {
           const spoken = e.results[0][0].transcript;
-          const inp = document.getElementById('cmd-input') || document.querySelector('input[type="text"], textarea');
-          if (inp) {
-            inp.value = spoken;
-            const sendBtn = document.getElementById('send-btn') || document.querySelector('button[type="submit"]');
-            if (sendBtn) sendBtn.click();
-            else inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-          }
-          toast('Sent: ' + spoken);
+          handleVoiceCommand(spoken);
+          toast('Command: ' + spoken);
         };
         _recog.onerror = (e) => {
           sys('Mic notice: ' + e.error);
@@ -335,11 +388,77 @@
         toast('Wireless Mic Stopped');
         sys('Wireless Mic stopped.');
       }
-    } else {
-        micBtn.classList.remove('recording');
-        toast('🎤 Voice Command Stopped');
-        sys('Voice command mode stopped.');
+    }
+
+    // ── PRECOG floating panel: open/close + authenticated live telemetry ──
+    let _precogTimer = null;
+    let _precogHistory = [];
+    function openPrecog() {
+      const el = document.getElementById('precog-overlay');
+      if (!el) return;
+      el.classList.add('open');
+      document.addEventListener('keydown', _precogEsc);
+      refreshPrecog();
+      if (!_precogTimer) _precogTimer = setInterval(refreshPrecog, 2500);
+      toast('PRECOG Intelligence online');
+    }
+    function closePrecog() {
+      const el = document.getElementById('precog-overlay');
+      if (el) el.classList.remove('open');
+      document.removeEventListener('keydown', _precogEsc);
+      if (_precogTimer) { clearInterval(_precogTimer); _precogTimer = null; }
+      toast('PRECOG panel closed');
+    }
+    function _precogEsc(e) { if (e.key === 'Escape') closePrecog(); }
+    function _isPrecogOpen(text) {
+      const s = String(text || '').toLowerCase().replace(/[.,!?]/g,' ');
+      return /\b(open|show|start|display)\b.*\b(precog|pre cog)\b/.test(s) || /\b(precog|pre cog)\b.*\b(open|show|start)\b/.test(s);
+    }
+    function _isPrecogClose(text) {
+      const s = String(text || '').toLowerCase().replace(/[.,!?]/g,' ');
+      return /\b(close|hide|dismiss)\b.*\b(precog|pre cog|monitor|window|panel)\b/.test(s) || /\b(precog|pre cog)\b.*\b(close|hide|dismiss)\b/.test(s);
+    }
+    async function refreshPrecog() {
+      if (!document.getElementById('precog-overlay')?.classList.contains('open')) return;
+      try {
+        const res = await _authFetch('/api/precog/live');
+        if (!res.ok) throw new Error('Telemetry endpoint returned ' + res.status);
+        const d = await res.json();
+        document.getElementById('pc-cpu').textContent = d.current.cpu_pct.toFixed(1) + '%';
+        document.getElementById('pc-ram').textContent = d.current.ram_pct.toFixed(1) + '%';
+        document.getElementById('pc-disk').textContent = d.current.disk_pct.toFixed(1) + '%';
+        document.getElementById('pc-disk-sub').textContent = d.current.disk_free_gb.toFixed(1) + ' GB free';
+        document.getElementById('pc-health').textContent = d.health_score + '/100';
+        document.getElementById('pc-health-sub').textContent = d.health_label;
+        document.getElementById('pc-ram-sub').textContent = d.ram_trend;
+        document.getElementById('precog-live-state').textContent = 'LIVE · ' + new Date().toLocaleTimeString();
+        _precogHistory = d.history || [];
+        drawPrecogChart(_precogHistory);
+        const proc = document.getElementById('precog-processes');
+        proc.innerHTML = (d.top_processes || []).map(p => `<div class="precog-process"><span>${esc(p.name)}</span><span>${p.ram_mb.toFixed(0)} MB · ${p.cpu_pct.toFixed(1)}%</span></div>`).join('') || 'No process data';
+        const findings = [d.ram_leak_suspected ? '⚠ Possible sustained RAM growth detected. This is a trend warning, not proof of a memory leak.' : '✓ No sustained RAM-growth warning from the available history.',
+          ...(d.anomalies || []).map(x => '⚠ ' + x),
+          '15-minute trend: CPU ' + d.forecasts.cpu + ' · RAM ' + d.forecasts.ram + ' · Disk ' + d.forecasts.disk,
+          'Disk outlook: ' + d.disk_projection,
+          'Network: ' + d.network,
+          'Temperature: ' + d.temperature,
+          'History: ' + d.sample_count + ' samples · ' + d.history_minutes.toFixed(1) + ' minutes.',
+          'Forecasts are statistical estimates, not guarantees. Network spikes alone do not indicate an attack.'];
+        document.getElementById('precog-findings').textContent = findings.join('\n');
+      } catch (err) {
+        document.getElementById('precog-live-state').textContent = 'OFFLINE';
+        document.getElementById('precog-findings').textContent = 'PRECOG telemetry unavailable: ' + err.message;
       }
+    }
+    function drawPrecogChart(rows) {
+      const c = document.getElementById('precog-chart'); if (!c) return;
+      const ctx = c.getContext('2d'), w = c.width, h = c.height;
+      ctx.clearRect(0,0,w,h); ctx.strokeStyle='rgba(0,229,255,.12)'; ctx.lineWidth=1;
+      for(let i=0;i<=4;i++){const y=12+(h-30)*i/4;ctx.beginPath();ctx.moveTo(36,y);ctx.lineTo(w-8,y);ctx.stroke();ctx.fillStyle='#7393a5';ctx.font='12px sans-serif';ctx.fillText(String(100-i*25),4,y+4);}
+      const series=[['cpu_pct','#00e5ff'],['ram_pct','#62ffad'],['disk_pct','#f4b84a']];
+      const data=(rows||[]).slice(-60); if(data.length<2){ctx.fillStyle='#7393a5';ctx.fillText('Collecting live samples…',w/2-70,h/2);return;}
+      series.forEach(([key,color])=>{ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();data.forEach((r,i)=>{const x=36+(w-48)*i/(data.length-1),y=12+(h-30)*(1-Math.max(0,Math.min(100,Number(r[key])||0))/100);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();});
+      ctx.font='12px sans-serif';let lx=42;series.forEach(([key,color])=>{ctx.fillStyle=color;ctx.fillRect(lx, h-9, 12, 3);ctx.fillText(key.replace('_pct','').toUpperCase(),lx+17,h-6);lx+=130;});
     }
 
     let _toastTimer;
@@ -352,6 +471,3 @@
   </script>
 </body>
 </html>
-```[cite: 3, 4]
-
-ఈ కోడ్‌ని నీ ప్రాజెక్ట్ ఫోల్డర్‌లోని `app.html` లో సేవ్ చేసి చెక్ చేయి Hari, ఇప్పుడు డ్యాష్‌బోర్డ్ హెడర్‌లోనే **Restart Server** బటన్ కూడా పర్‌ఫెక్ట్‌గా వచ్చేస్తుంది[cite: 3]!

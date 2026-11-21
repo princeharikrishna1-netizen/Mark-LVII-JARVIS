@@ -1133,6 +1133,74 @@ class DashboardServer:
             from fastapi.responses import FileResponse
             return FileResponse(str(pathlib.Path(__file__).parent / "static" / "autonomous.html"))
 
+
+        @app.get("/api/precog/live")
+        async def precog_live_api(req: Request):
+            if not _auth(req):
+                return JSONResponse({"error": "unauthorized"}, status_code=401)
+            try:
+                import psutil as _psutil
+                import statistics as _statistics
+                import time as _time
+                import plugins.precog_intelligence_v3 as _precog
+                _precog._record()
+                vm = _psutil.virtual_memory()
+                du = _psutil.disk_usage(_precog._drive_root())
+                cpu = _psutil.cpu_percent(interval=0.05)
+                rows = list(_precog._ROWS[-60:])
+                now = _time.time()
+                history_minutes = ((rows[-1]["ts"] - rows[0]["ts"]) / 60) if len(rows) > 1 else 0.0
+                top = []
+                for proc in _psutil.process_iter(["name", "memory_info", "cpu_percent"]):
+                    try:
+                        info = proc.info
+                        mem = info.get("memory_info")
+                        if mem:
+                            top.append({"name": info.get("name") or "unknown",
+                                "ram_mb": round(mem.rss / 1048576, 1),
+                                "cpu_pct": round(float(info.get("cpu_percent") or 0), 1)})
+                    except (_psutil.NoSuchProcess, _psutil.AccessDenied, _psutil.ZombieProcess):
+                        continue
+                top.sort(key=lambda x: x["ram_mb"], reverse=True)
+                # Simple transparent score; it is a heuristic, not a certified health metric.
+                score = 100
+                if cpu >= 95: score -= 35
+                elif cpu >= 85: score -= 20
+                elif cpu >= 70: score -= 10
+                if vm.percent >= 95: score -= 35
+                elif vm.percent >= 90: score -= 25
+                elif vm.percent >= 80: score -= 12
+                if du.percent >= 98: score -= 25
+                elif du.percent >= 95: score -= 15
+                elif du.percent >= 90: score -= 8
+                score = max(0, min(100, score))
+                label = "HEALTHY" if score >= 85 else "WATCH" if score >= 70 else "WARNING" if score >= 45 else "CRITICAL"
+                ram_values = [r for r in rows if isinstance(r.get("ram_pct"), (int, float))]
+                ram_delta = (float(ram_values[-1]["ram_pct"]) - float(ram_values[0]["ram_pct"])) if len(ram_values) >= 5 else 0.0
+                ram_leak = len(ram_values) >= 10 and history_minutes >= 9 and ram_delta >= 5.0
+                ram_trend = (f"RAM +{ram_delta:.1f} percentage points in {history_minutes:.1f} min" if ram_delta > 0.5 else
+                             f"RAM {ram_delta:.1f} percentage points over {history_minutes:.1f} min")
+                current = {"cpu_pct": round(cpu, 1), "ram_pct": round(float(vm.percent), 1),
+                    "disk_pct": round(float(du.percent), 1), "disk_free_gb": round(du.free / 1073741824, 2)}
+                try:
+                    forecasts = {"cpu": _precog._forecast("cpu_pct")[0],
+                        "ram": _precog._forecast("ram_pct")[0], "disk": _precog._forecast("disk_pct")[0]}
+                    anomalies = _precog._anomalies()
+                    disk_projection = _precog._disk_projection()
+                    network = _precog._network()
+                    temperature = _precog._thermal(rows[-1] if rows else {})
+                except Exception:
+                    forecasts = {"cpu": "collecting", "ram": "collecting", "disk": "collecting"}
+                    anomalies, disk_projection, network, temperature = [], "Collecting history.", "Collecting baseline.", "Temperature unavailable."
+                return {"current": current, "history": rows, "top_processes": top[:6],
+                    "health_score": score, "health_label": label, "ram_trend": ram_trend,
+                    "ram_leak_suspected": ram_leak, "anomalies": anomalies,
+                    "forecasts": forecasts, "disk_projection": disk_projection,
+                    "network": network, "temperature": temperature,
+                    "sample_count": len(rows), "history_minutes": round(history_minutes, 1)}
+            except Exception as exc:
+                return JSONResponse({"error": f"PRECOG telemetry unavailable: {type(exc).__name__}: {exc}"}, status_code=503)
+
         @app.get("/api/autonomous_status")
         async def autonomous_status_api():
             import json as _j, psutil as _ps
