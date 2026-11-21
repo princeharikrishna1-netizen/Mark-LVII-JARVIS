@@ -70,6 +70,8 @@ def _run_diagnostics(auto_fix: bool = True, quarantine: bool = False) -> tuple[i
         if cf.exists():
             checked += 1
             try:
+                if any(x in str(str(cf)) for x in ("__pycache__", "backups", "time_machine", ".git")): continue
+
                 py_compile.compile(str(cf), doraise=True)
             except Exception as e:
                 broken.append(f"{cf.as_posix()} ({e})")
@@ -79,6 +81,8 @@ def _run_diagnostics(auto_fix: bool = True, quarantine: bool = False) -> tuple[i
             continue
         checked += 1
         try:
+            if any(x in str(str(pf)) for x in ("__pycache__", "backups", "time_machine", ".git")): continue
+
             py_compile.compile(str(pf), doraise=True)
             spec = importlib.util.spec_from_file_location(f"_heal_{pf.stem}", pf)
             mod = importlib.util.module_from_spec(spec)
