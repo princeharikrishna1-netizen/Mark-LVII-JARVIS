@@ -600,7 +600,8 @@ class JarvisLive:
         self._platform_notes_shown = False
         self.ui             = ui
         self._asst_name     = "JARVIS"
-        self._mic_muted     = True   # updated each session from config
+        self._mic_muted     = True
+        self._context_aware = True   # updated each session from config
         self.session              = None
         self.audio_in_queue       = None
         self.out_queue            = None
@@ -1223,8 +1224,24 @@ class JarvisLive:
                 getattr(self._dashboard, "_bind_error", "") or "")
 
     def _on_text_command(self, text: str):
+        if _cmd in ("context off", "disable context"):
+            self._context_aware = False
+            self.ui.write_log("SYS: 🧠 Live Context Awareness OFF.")
+            return
+        if _cmd in ("context on", "enable context"):
+            self._context_aware = True
+            self.ui.write_log("SYS: 🧠 Live Context Awareness ON.")
+            return
         if not self._loop or not self.session:
             return
+        _outbound = text
+        if getattr(self, "_context_aware", True):
+            try:
+                from plugins.context_awareness import get_snapshot
+                _ctx = get_snapshot()
+                _outbound = f"[LIVE CONTEXT: {_ctx}]\nUser: {text}"
+            except Exception:
+                pass
         # Respect wake-word sleep: a typed command must not be answered while
         # asleep either (the sleep gate is not just for the mic). Wake first with
         # "Hey Jarvis" or the WAKE NOW button.
@@ -1233,7 +1250,7 @@ class JarvisLive:
             return
         asyncio.run_coroutine_threadsafe(
             self.session.send_client_content(
-                turns={"role": "user", "parts": [{"text": text}]},
+                turns={"role": "user", "parts": [{"text": _outbound}]},
                 turn_complete=True
             ),
             self._loop
@@ -1707,6 +1724,28 @@ class JarvisLive:
                 self._keep_task(asyncio.create_task(_do_shutdown()))
 
             elif self._action_registry.has(name):
+                # Automatic Pre-Execution Threat Firewall for system/file actions
+                if name in ("computer_control", "file_controller", "desktop_control"):
+                    try:
+                        from plugins.threat_simulator import run as _threat_check
+                        _verdict = _threat_check({"payload": json.dumps(args)})
+                        if "BLOCKED" in _verdict:
+                            return types.FunctionResponse(id=fc.id, name=name, response={"result": _verdict})
+                    except Exception:
+                        pass
+                # Auto-checkpoint Infinite Project Memory after coding actions
+                if name in ("dev_agent", "code_helper"):
+                    try:
+                        from plugins.infinite_project_memory import run as _ipm
+                        _ipm({
+                            "action": "save",
+                            "project": Path(str(args.get("folder") or ".")).name or "Mark-LVII",
+                            "stopped_at": f"Executed {name}: {str(args.get('task') or args.get('prompt') or 'code update')[:100]}",
+                            "changed_files": str(args.get("file_path") or args.get("folder") or "workspace"),
+                            "next_steps": "Verify changes and run tests"
+                        })
+                    except Exception:
+                        pass
                 # file_processor: fall back to the currently-uploaded file when none is given
                 if name == "file_processor" and not args.get("file_path") and self.ui.current_file:
                     args["file_path"] = self.ui.current_file
