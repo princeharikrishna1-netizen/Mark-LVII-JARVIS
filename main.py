@@ -1224,6 +1224,7 @@ class JarvisLive:
                 getattr(self._dashboard, "_bind_error", "") or "")
 
     def _on_text_command(self, text: str):
+        _cmd = text.strip().lower()
         if _cmd in ("context off", "disable context"):
             self._context_aware = False
             self.ui.write_log("SYS: 🧠 Live Context Awareness OFF.")
