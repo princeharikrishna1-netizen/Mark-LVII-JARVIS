@@ -119,6 +119,7 @@ class HudCanvas(QWidget):
         self._base_scale = 1.0    # slow "breathing" target; amp is added per-frame
         self._base_halo  = 55.0
         self._scan_pulse_t = 0.0
+        self._telem_cache = (0.0, 'CPU --% | RAM --% | PING --ms')
 
         self._tmr = QTimer(self)
         self._tmr.timeout.connect(self._step)
@@ -623,6 +624,36 @@ class HudCanvas(QWidget):
             p.drawLine(QLineF(cx_b, cy_b, cx_b + dx * arm, cy_b))
             p.drawLine(QLineF(cx_b, cy_b, cx_b, cy_b + dy * arm))
 
+    def _paint_telemetry_pill(self, p: QPainter, W: float) -> None:
+        """Draws a sleek top telemetry bar when HUD is in compact/gaming overlay width."""
+        if W > 520:
+            return
+        now = time.time()
+        last_t, label = self._telem_cache
+        if now - last_t > 2.0:
+            try:
+                from actions.gaming_telemetry import get_gaming_stats
+                s = get_gaming_stats()
+                ping_txt = f"{s['ping_ms']}ms" if s["ping_ms"] > 0 else "OFF"
+                label = f"CPU {s['cpu']:.0f}%  |  RAM {s['ram_pct']:.0f}%  |  PING {ping_txt}"
+            except Exception:
+                label = f"CPU {psutil.cpu_percent(interval=None):.0f}%  |  RAM {psutil.virtual_memory().percent:.0f}%"
+            self._telem_cache = (now, label)
+
+        col = qcol(C.ACC)
+        pill_w = min(W - 32.0, 310.0)
+        pill_h = 24.0
+        px = (W - pill_w) / 2.0
+        py = 12.0
+        rect = QRectF(px, py, pill_w, pill_h)
+        p.setPen(QPen(with_alpha(col, 0.55), 1.0))
+        p.setBrush(QBrush(with_alpha(qcol(C.BG), 0.78)))
+        p.drawRoundedRect(rect, 6.0, 6.0)
+        p.setFont(px_font(10, QFont.Weight.DemiBold, spacing=2))
+        p.setPen(QPen(col))
+        p.drawText(rect, Qt.AlignmentFlag.AlignCenter, label)
+
+
     def paintEvent(self, _):
         p = QPainter(self)
         if not p.isActive():      # device not ready (e.g. 0-size during layout) — skip cleanly
@@ -719,6 +750,7 @@ class HudCanvas(QWidget):
             w = max(1.5, bw - 2.0)
             p.fillRect(QRectF(x, wy - hgt, w, hgt), c)
             p.fillRect(QRectF(x, wy + 1.5, w, hgt * 0.45), blend(c, 0.30))
+        self._paint_telemetry_pill(p, W)
         self._paint_scan_pulse(p, W, H)
 
         p.end()   # end deterministically so the backing store never flushes an active painter
