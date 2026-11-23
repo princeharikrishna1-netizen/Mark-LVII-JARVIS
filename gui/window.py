@@ -95,6 +95,7 @@ from gui.widgets import (ArcLogo, CommandFrame, DataRow, HeaderBar, HoloPanel, I
 
 
 class MainWindow(QMainWindow):
+    _hud_profile_sig = pyqtSignal(str, str)
     _log_sig        = pyqtSignal(str)
     _state_sig      = pyqtSignal(str)
     _content_sig    = pyqtSignal(str, str)   # (title, text) — thread-safe content display
@@ -120,6 +121,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, face_path: str):
         super().__init__()
+        self._hud_profile_sig.connect(self._on_apply_hud_profile)
         self._face_path = face_path
 
         # Register bundled Telugu font so HUD, LogWidget & ContentPanel render Telugu cleanly
@@ -2984,3 +2986,53 @@ class MainWindow(QMainWindow):
         self._log.append_log(f"SYS: Initialised. OS={os_name.upper()}. {self._assistant_name} online.")
 
 
+    def _on_apply_hud_profile(self, profile: str, accent: str) -> None:
+        """Thread-safe slot to switch HUD layout profile, opacity, always-on-top, and theme."""
+        try:
+            prof = (profile or "full").strip().lower()
+            screen = QApplication.primaryScreen()
+            avail = screen.availableGeometry() if screen else QRect(0, 0, 1920, 1080)
+
+            if prof in ("gaming", "compact"):
+                self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+                self.setWindowOpacity(0.84)
+                w, h = 440, 480
+                self.resize(w, h)
+                self.move(avail.right() - w - 18, avail.top() + 24)
+                self.show()
+            elif prof in ("stealth", "ghost"):
+                self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+                self.setWindowOpacity(0.62)
+                w, h = 340, 360
+                self.resize(w, h)
+                self.move(avail.right() - w - 16, avail.bottom() - h - 20)
+                self.show()
+            elif prof == "reactor":
+                hud = getattr(self, "hud", None) or getattr(self, "_hud", None)
+                if hud is not None:
+                    hud.hud_style = "reactor"
+                    hud.update()
+            elif prof == "face":
+                hud = getattr(self, "hud", None) or getattr(self, "_hud", None)
+                if hud is not None:
+                    hud.hud_style = "face"
+                    hud.update()
+            else:  # "full"
+                self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False)
+                self.setWindowOpacity(1.0)
+                self.resize(_DEFAULT_W, _DEFAULT_H)
+                self.move(
+                    avail.left() + max(0, (avail.width() - _DEFAULT_W) // 2),
+                    avail.top() + max(0, (avail.height() - _DEFAULT_H) // 2),
+                )
+                self.show()
+
+            if accent:
+                apply_ui_accent(accent)
+                retheme_all_widgets(self)
+                hud = getattr(self, "hud", None) or getattr(self, "_hud", None)
+                if hud is not None:
+                    hud._grid_key = None
+                    hud.update()
+        except Exception as e:
+            print(f"[HUD Mode] Profile switch warning: {e}")
