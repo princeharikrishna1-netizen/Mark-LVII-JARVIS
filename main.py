@@ -77,7 +77,7 @@ from memory.memory_manager import (
 # system_status).
 from core import outcome
 from core.action_loader import strip_meta
-from actions.screen_processor  import _capture_camera, _capture_screen
+from actions.screen_processor  import _capture_camera, _capture_screen, _capture_screen_rich
 from actions.system_monitor    import SystemMonitor, get_system_status
 from actions.proactive         import ProactiveEngine
 from actions.background_monitor import (
@@ -1655,7 +1655,15 @@ class JarvisLive:
                         print(f"[Vision] ðŸ“· Camera: {len(img_b):,} bytes")
                         _stall = "camera"
                     else:
-                        img_b, mime_t = await loop.run_in_executor(None, _capture_screen)
+                        img_b, mime_t, _rich_ctx = await loop.run_in_executor(None, _capture_screen_rich)
+                        try:
+                            hud = getattr(self.ui, "hud", None) or getattr(self.ui, "_hud", None)
+                            if hud and hasattr(hud, "trigger_scan_pulse"):
+                                hud.trigger_scan_pulse()
+                        except Exception:
+                            pass
+                        if _rich_ctx:
+                            user_text = f"{user_text}\n\n[Screen & Clipboard Context]\n{_rich_ctx}" 
                         print(f"[Vision] ðŸ–¥ï¸   Screen: {len(img_b):,} bytes")
                         _stall = "screen"
                     self._pending_vision = (img_b, mime_t, user_text, angle)

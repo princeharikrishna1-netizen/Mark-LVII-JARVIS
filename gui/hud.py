@@ -1,4 +1,4 @@
-"""gui/hud.py — The centre of the HUD: the avatar or the reactor core, the state line and the waveform.
+﻿"""gui/hud.py — The centre of the HUD: the avatar or the reactor core, the state line and the waveform.
 
 Split out of ui.py in Mark LVII; behaviour unchanged."""
 from __future__ import annotations
@@ -118,6 +118,7 @@ class HudCanvas(QWidget):
         self._vis_i = None        # first schedule frame not yet handed to the mouth
         self._base_scale = 1.0    # slow "breathing" target; amp is added per-frame
         self._base_halo  = 55.0
+        self._scan_pulse_t = 0.0
 
         self._tmr = QTimer(self)
         self._tmr.timeout.connect(self._step)
@@ -587,6 +588,41 @@ class HudCanvas(QWidget):
             p.drawText(QRectF(cx - r, cy - fsz, r * 2, fsz * 2),
                        Qt.AlignmentFlag.AlignCenter, name)
 
+    def trigger_scan_pulse(self) -> None:
+        """Triggers a brief sci-fi radar sweep across the HUD when vision captures the screen."""
+        self._scan_pulse_t = time.time()
+        self.update()
+
+    def _paint_scan_pulse(self, p: QPainter, W: float, H: float) -> None:
+        if self._scan_pulse_t <= 0.0:
+            return
+        elapsed = time.time() - self._scan_pulse_t
+        duration = 0.85
+        if elapsed >= duration:
+            self._scan_pulse_t = 0.0
+            return
+        prog = elapsed / duration
+        alpha = math.sin(prog * math.pi)
+        scan_y = prog * H
+        col = qcol(C.ACC)
+
+        # Horizontal laser sweep + glow trail
+        grad = QLinearGradient(0, max(0.0, scan_y - 36.0), 0, scan_y + 4.0)
+        grad.setColorAt(0.0, with_alpha(col, 0.0))
+        grad.setColorAt(0.85, with_alpha(col, 0.28 * alpha))
+        grad.setColorAt(1.0, with_alpha(col, 0.85 * alpha))
+        p.fillRect(QRectF(0, max(0.0, scan_y - 36.0), W, 40.0), grad)
+
+        p.setPen(QPen(with_alpha(col, 0.90 * alpha), 1.5))
+        p.drawLine(QLineF(12.0, scan_y, W - 12.0, scan_y))
+
+        # Corner target reticles
+        p.setPen(QPen(with_alpha(col, 0.75 * alpha), 2.0))
+        m, arm = 14.0, 22.0
+        for cx_b, cy_b, dx, dy in ((m, m, 1, 1), (W - m, m, -1, 1), (m, H - m, 1, -1), (W - m, H - m, -1, -1)):
+            p.drawLine(QLineF(cx_b, cy_b, cx_b + dx * arm, cy_b))
+            p.drawLine(QLineF(cx_b, cy_b, cx_b, cy_b + dy * arm))
+
     def paintEvent(self, _):
         p = QPainter(self)
         if not p.isActive():      # device not ready (e.g. 0-size during layout) — skip cleanly
@@ -683,5 +719,7 @@ class HudCanvas(QWidget):
             w = max(1.5, bw - 2.0)
             p.fillRect(QRectF(x, wy - hgt, w, hgt), c)
             p.fillRect(QRectF(x, wy + 1.5, w, hgt * 0.45), blend(c, 0.30))
+        self._paint_scan_pulse(p, W, H)
 
         p.end()   # end deterministically so the backing store never flushes an active painter
+

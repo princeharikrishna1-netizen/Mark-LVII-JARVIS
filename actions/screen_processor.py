@@ -1,4 +1,4 @@
-"""
+﻿"""
 Screen & webcam capture for JARVIS vision.
 
 Provides the two capture entry points main.py uses — `_capture_screen()` and
@@ -185,3 +185,36 @@ def _capture_camera() -> tuple[bytes, str]:
 
     _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, _JPEG_Q])
     return buf.tobytes(), "image/jpeg"
+
+def _capture_screen_rich() -> tuple[bytes, str, str]:
+    """Captures screen JPEG plus active window title, clipboard text, and UIA summary."""
+    img_bytes, mime_type = _capture_screen()
+    notes: list[str] = []
+
+    try:
+        import pygetwindow as gw
+        win = gw.getActiveWindow()
+        if win and win.title and win.title.strip():
+            notes.append(f"Active Window: {win.title.strip()}")
+    except Exception:
+        pass
+
+    try:
+        from core.screenview import look
+        view = look(budget_s=0.45, allow_ocr=False)
+        if view and not view.degraded:
+            notes.append(f"UI Summary: {view.summary()}")
+    except Exception:
+        pass
+
+    try:
+        import pyperclip
+        clip = pyperclip.paste()
+        if clip and isinstance(clip, str) and clip.strip():
+            snippet = clip.strip()[:1200]
+            notes.append(f"Clipboard Snippet:\n{snippet}")
+    except Exception:
+        pass
+
+    return img_bytes, mime_type, "\n".join(notes)
+
