@@ -51,9 +51,10 @@ def switch_hud_mode(parameters: dict, **kwargs) -> str:
 TOOL = {
     "name": "switch_hud_mode",
     "description": (
-        "Switches the JARVIS HUD visual mode, overlay size, transparency, centrepiece style, "
-        "or accent color theme live. Use when the user asks for gaming mode, compact overlay, "
-        "stealth/ghost mode, full command center mode, reactor core vs avatar face, or a HUD color change."
+        "PRIMARY tool for switching the main HUD visual appearance, centrepiece (3D reactor core vs avatar face), "
+        "overlay size/transparency (full, gaming, compact, stealth/ghost mode), or accent color theme live. "
+        "ALWAYS use this tool (not open_feature_hud) when the user asks for reactor core, avatar face, "
+        "gaming mode, compact overlay, stealth mode, full HUD, or changing HUD colors."
     ),
     "parameters": {
         "type": "OBJECT",
